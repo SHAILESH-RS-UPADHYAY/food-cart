@@ -59,7 +59,7 @@ function OrderScene({ scale }: { scale: number }) {
         <Animated.View
           key={c.name}
           style={{
-            position: 'absolute', top: 30 + c.y, width: 148, borderRadius: R.card, backgroundColor: C.night2, overflow: 'hidden',
+            position: 'absolute', top: 30 + c.y, width: 148, borderRadius: R.card, backgroundColor: C.card, overflow: 'hidden',
             zIndex: i === 1 ? 2 : 1, opacity: 0,
             animationName: {
               from: { opacity: 0, transform: [{ translateX: c.x * 0.4 }, { translateY: 70 }, { rotate: '0deg' }] },
@@ -70,10 +70,10 @@ function OrderScene({ scale }: { scale: number }) {
         >
           <Photo photo={c.photo} width={148} style={{ width: 148, height: 104 }} />
           <View style={{ padding: 12, gap: 4 }}>
-            <T v="label" color={C.nightText} numberOfLines={1} style={{ fontSize: 13 }}>{c.name}</T>
+            <T v="label" color={C.ink} numberOfLines={1} style={{ fontSize: 13 }}>{c.name}</T>
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
               <View style={{ width: 7, height: 7, borderRadius: 4, backgroundColor: '#5BD38B' }} />
-              <T v="small" color={C.nightMuted}>{c.eta}</T>
+              <T v="small" color={C.ink3}>{c.eta}</T>
             </View>
           </View>
           {i === 1 && (
@@ -93,7 +93,7 @@ function OrderScene({ scale }: { scale: number }) {
           key={p}
           style={{
             position: 'absolute', top: 70, left: 147, width: 46, height: 46, borderRadius: 23, overflow: 'hidden',
-            borderWidth: 3, borderColor: C.haldi, zIndex: 3, opacity: 0,
+            borderWidth: 3, borderColor: C.accent, zIndex: 3, opacity: 0,
             animationName: {
               '0%': { opacity: 0, transform: [{ translateX: 0 }, { translateY: 0 }, { scale: 0.5 }] },
               '18%': { opacity: 1, transform: [{ translateX: 0 }, { translateY: -34 }, { scale: 1.05 }] },
@@ -109,16 +109,16 @@ function OrderScene({ scale }: { scale: number }) {
       <Animated.View
         key={count}
         style={{
-          position: 'absolute', right: 26, bottom: 18, width: 68, height: 68, borderRadius: 34, backgroundColor: C.haldi,
+          position: 'absolute', right: 26, bottom: 18, width: 68, height: 68, borderRadius: 34, backgroundColor: C.accent,
           alignItems: 'center', justifyContent: 'center', zIndex: 4,
           ...(count > 0
             ? { animationName: { '0%': { transform: [{ scale: 1 }] }, '40%': { transform: [{ scale: 1.2 }] }, '100%': { transform: [{ scale: 1 }] } }, animationDuration: '320ms', animationTimingFunction: CSS_EASE_OUT }
             : rise(700, 20)),
         }}
       >
-        <Icon name="shopping-bag-fill" size={28} color={C.ink} />
+        <Icon name="shopping-bag-fill" size={28} color={C.onAccent} />
         {count > 0 && (
-          <View style={{ position: 'absolute', top: -2, right: -2, minWidth: 26, height: 26, borderRadius: 13, backgroundColor: C.ink, borderWidth: 2, borderColor: C.haldi, alignItems: 'center', justifyContent: 'center' }}>
+          <View style={{ position: 'absolute', top: -2, right: -2, minWidth: 26, height: 26, borderRadius: 13, backgroundColor: C.ink, borderWidth: 2, borderColor: C.canvas, alignItems: 'center', justifyContent: 'center' }}>
             <T v="label" color={C.chalk} tab>{count}</T>
           </View>
         )}
@@ -147,18 +147,18 @@ function TrackScene({ scale }: { scale: number }) {
   ]);
   return (
     <View style={{ width: 320, height: 330, transform: [{ scale }], alignItems: 'center', justifyContent: 'center', gap: 26 }}>
-      <Animated.View style={[{ width: 260, borderRadius: R.token, backgroundColor: C.chalk, padding: 20 }, rise(80, 30)]}>
-        <T v="label" color={C.ink3}>BOOKS N COOKS</T>
-        <T v="small" color={C.ink3} style={{ marginTop: 6 }}>Token</T>
-        <T v="brand" size={54} tab>#047</T>
+      <Animated.View style={[{ width: 260, borderRadius: R.token, backgroundColor: C.accentTint, padding: 20 }, rise(80, 30)]}>
+        <T v="label" color={C.ink2}>BOOKS N COOKS</T>
+        <T v="small" color={C.ink2} style={{ marginTop: 6 }}>Token</T>
+        <T v="brand" size={54} color={C.accent} tab>#047</T>
         <View style={{ flexDirection: 'row', gap: 5, marginTop: 4 }}>
-          {Array.from({ length: 16 }, (_, i) => <View key={i} style={{ width: 8, height: 2, borderRadius: 1, backgroundColor: C.line }} />)}
+          {Array.from({ length: 16 }, (_, i) => <View key={i} style={{ width: 8, height: 2, borderRadius: 1, backgroundColor: 'rgba(15,31,25,0.18)' }} />)}
         </View>
         <T v="small" color={C.ink2} style={{ marginTop: 10 }}>White Sauce Penne, Lemon Iced Tea</T>
         {stamped && (
           <Animated.View
             style={{
-              position: 'absolute', right: 16, top: 44, borderWidth: 3, borderColor: C.leaf, borderRadius: 10, paddingHorizontal: 12, paddingVertical: 4,
+              position: 'absolute', right: 16, top: 44, borderWidth: 3, borderColor: C.accent, borderRadius: 10, paddingHorizontal: 12, paddingVertical: 4,
               transform: [{ rotate: '-12deg' }],
               animationName: {
                 '0%': { opacity: 0, transform: [{ rotate: '-22deg' }, { scale: 2 }] },
@@ -168,7 +168,7 @@ function TrackScene({ scale }: { scale: number }) {
               animationDuration: '360ms', animationTimingFunction: CSS_EASE_OUT,
             }}
           >
-            <T v="h2" color={C.leaf} style={{ letterSpacing: 1.5 }}>READY</T>
+            <T v="h2" color={C.accent} style={{ letterSpacing: 1.5 }}>READY</T>
           </Animated.View>
         )}
       </Animated.View>
@@ -178,15 +178,15 @@ function TrackScene({ scale }: { scale: number }) {
           return (
             <View key={s.label} style={{ flex: i === 0 ? undefined : 1, flexDirection: 'row', alignItems: 'flex-start' }}>
               {i > 0 && (
-                <View style={{ flex: 1, height: 4, borderRadius: 2, backgroundColor: C.night3, marginTop: 17, marginHorizontal: 6, overflow: 'hidden' }}>
-                  <Animated.View style={{ flex: 1, backgroundColor: C.haldi, transformOrigin: 'left', transform: [{ scaleX: on ? 1 : 0 }], transitionProperty: 'transform', transitionDuration: 500, transitionTimingFunction: CSS_EASE_IN_OUT }} />
+                <View style={{ flex: 1, height: 4, borderRadius: 2, backgroundColor: C.line, marginTop: 17, marginHorizontal: 6, overflow: 'hidden' }}>
+                  <Animated.View style={{ flex: 1, backgroundColor: C.accent, transformOrigin: 'left', transform: [{ scaleX: on ? 1 : 0 }], transitionProperty: 'transform', transitionDuration: 500, transitionTimingFunction: CSS_EASE_IN_OUT }} />
                 </View>
               )}
               <View style={{ alignItems: 'center', gap: 8, width: 64 }}>
                 <Animated.View
                   style={{
                     width: 38, height: 38, borderRadius: 19, alignItems: 'center', justifyContent: 'center',
-                    backgroundColor: on ? (i === 2 ? C.leaf : C.haldi) : C.night3,
+                    backgroundColor: on ? (i === 2 ? C.leaf : C.accent) : C.line,
                     transform: [{ scale: on ? 1 : 0.86 }],
                     transitionProperty: ['backgroundColor', 'transform'], transitionDuration: 260, transitionTimingFunction: BOUNCE,
                   }}
@@ -194,10 +194,10 @@ function TrackScene({ scale }: { scale: number }) {
                   <Animated.View
                     style={i === 1 && step === 1 ? { animationName: { '0%': { transform: [{ scale: 1 }] }, '50%': { transform: [{ scale: 1.22 }, { rotate: '-6deg' }] }, '100%': { transform: [{ scale: 1 }] } }, animationDuration: '380ms', animationIterationCount: 3 } : undefined}
                   >
-                    <Icon name={s.icon} size={18} color={on ? (i === 2 ? C.chalk : C.ink) : C.nightMuted} />
+                    <Icon name={s.icon} size={18} color={on ? C.chalk : C.ink3} />
                   </Animated.View>
                 </Animated.View>
-                <T v="label" color={on ? C.nightText : C.nightMuted}>{s.label}</T>
+                <T v="label" color={on ? C.ink : C.ink3}>{s.label}</T>
               </View>
             </View>
           );
@@ -224,13 +224,13 @@ function PickupScene({ scale }: { scale: number }) {
     <View style={{ width: 330, height: 330, transform: [{ scale }], alignItems: 'center', justifyContent: 'center', gap: 30 }}>
       <View style={{ flexDirection: 'row', alignItems: 'flex-end', height: 96 }}>
         <Animated.View style={[{ marginRight: 14 }, rise(60, 10)]}>
-          <CartMark size={64} awning={C.haldi} stripe={C.chalk} cart={C.chalk} />
+          <CartMark size={64} />
         </Animated.View>
         <View style={{ width: 30 }} />
         {Array.from({ length: QUEUE }, (_, i) => (
           <Animated.View key={i} style={[{ width: 30, alignItems: 'center' }, rise(100 + i * 50, 10)]}>
-            <View style={{ width: 13, height: 13, borderRadius: 7, backgroundColor: C.night3 }} />
-            <View style={{ width: 22, height: 30, borderTopLeftRadius: 11, borderTopRightRadius: 11, borderRadius: 4, backgroundColor: C.night3, marginTop: 3 }} />
+            <View style={{ width: 13, height: 13, borderRadius: 7, backgroundColor: C.ink4 }} />
+            <View style={{ width: 22, height: 30, borderTopLeftRadius: 11, borderTopRightRadius: 11, borderRadius: 4, backgroundColor: C.ink4, marginTop: 3 }} />
           </Animated.View>
         ))}
         <Animated.View
@@ -245,11 +245,11 @@ function PickupScene({ scale }: { scale: number }) {
             animationDuration: '820ms', animationDelay: 380, animationTimingFunction: CSS_EASE_IN_OUT, animationFillMode: 'forwards',
           }}
         >
-          <View style={{ width: 13, height: 13, borderRadius: 7, backgroundColor: C.haldi }} />
-          <View style={{ width: 22, height: 30, borderTopLeftRadius: 11, borderTopRightRadius: 11, borderRadius: 4, backgroundColor: C.haldi, marginTop: 3 }} />
+          <View style={{ width: 13, height: 13, borderRadius: 7, backgroundColor: C.accent }} />
+          <View style={{ width: 22, height: 30, borderTopLeftRadius: 11, borderTopRightRadius: 11, borderRadius: 4, backgroundColor: C.accent, marginTop: 3 }} />
         </Animated.View>
       </View>
-      <Animated.View style={[{ flexDirection: 'row', alignItems: 'center', gap: 16, backgroundColor: C.chalk, borderRadius: R.token, padding: 16 }, rise(1150, 24)]}>
+      <Animated.View style={[{ flexDirection: 'row', alignItems: 'center', gap: 16, backgroundColor: C.card, borderRadius: R.token, padding: 16 }, rise(1150, 24)]}>
         <View style={{ gap: 6 }}>
           <T v="small" color={C.ink3}>Pickup code</T>
           <View style={{ flexDirection: 'row', gap: 6 }}>
@@ -279,10 +279,10 @@ function PickupScene({ scale }: { scale: number }) {
 // ---------- screen ----------
 
 const SLIDES = [
-  { title: 'Skip the lunch queue.', body: "Order ahead from every stall at CU and pick it up the moment it's hot." },
-  { title: 'Pick a stall. Fill your cart.', body: 'Seven campus stalls with live menus, prices and wait times. One tap to add.' },
-  { title: 'Watch it cook, live.', body: 'Your token moves from kitchen to counter in real time. We buzz you when it is ready.' },
-  { title: 'Show your code. Grab it.', body: 'Walk past the line, flash your 4-digit code at the counter, done.' },
+  { title: 'Order kar do. Line chhod do.', body: "Every stall at CU in one app. Order from class, pick it up when it's hot." },
+  { title: 'Saare stalls, ek jagah.', body: 'Live menus, prices and wait times for all seven stalls. Tap to add, done.' },
+  { title: 'Kitchen se live update.', body: "Your token moves from the tawa to the counter in real time. We buzz you the second it's ready." },
+  { title: 'Code dikhao, khana uthao.', body: "Skip the line, show your 4-digit code at the counter. That's it." },
 ];
 
 export default function Onboarding() {
@@ -326,7 +326,7 @@ export default function Onboarding() {
   const logoSize = Math.min(desktop ? 300 : 230, width * 0.56);
 
   return (
-    <View style={{ flex: 1, backgroundColor: C.night }}>
+    <View style={{ flex: 1, backgroundColor: C.canvas }}>
       <ScrollView
         ref={scroller}
         horizontal
@@ -353,10 +353,10 @@ export default function Onboarding() {
               </View>
               <View style={{ flex: wide ? 1 : undefined, maxWidth: 460, alignSelf: wide ? 'center' : 'stretch' }} key={active ? `on${i}` : `off${i}`}>
                 <Animated.View style={rise(i === 0 ? 1350 : 120)}>
-                  <T v="display" color={C.nightText} style={desktop ? { fontSize: 54, lineHeight: 56, letterSpacing: -2.2 } : undefined}>{s.title}</T>
+                  <T v="display" color={C.ink} style={desktop ? { fontSize: 54, lineHeight: 56, letterSpacing: -2.2 } : undefined}>{s.title}</T>
                 </Animated.View>
                 <Animated.View style={rise(i === 0 ? 1450 : 200)}>
-                  <T v="body" color={C.nightMuted} style={{ marginTop: 14, fontSize: desktop ? 18 : 16, lineHeight: desktop ? 26 : 23 }}>{s.body}</T>
+                  <T v="body" color={C.ink3} style={{ marginTop: 14, fontSize: desktop ? 18 : 16, lineHeight: desktop ? 26 : 23 }}>{s.body}</T>
                 </Animated.View>
               </View>
             </View>
@@ -366,8 +366,8 @@ export default function Onboarding() {
 
       <View style={{ position: 'absolute', top: insets.top + 12, right: desktop ? 40 : 16 }}>
         {index < SLIDES.length - 1 && (
-          <Press onPress={done} feedback="tap" style={{ paddingHorizontal: 16, height: 40, borderRadius: R.pill, backgroundColor: C.night2, justifyContent: 'center' }}>
-            <T v="label" color={C.nightText}>Skip</T>
+          <Press onPress={done} feedback="tap" style={{ paddingHorizontal: 16, height: 40, borderRadius: R.pill, backgroundColor: C.card, justifyContent: 'center' }}>
+            <T v="label" color={C.ink}>Skip</T>
           </Press>
         )}
       </View>
@@ -377,12 +377,12 @@ export default function Onboarding() {
           <View style={{ flexDirection: 'row', gap: 6 }} accessibilityLabel={`Step ${index + 1} of ${SLIDES.length}`}>
             {SLIDES.map((_, i) => (
               <Press key={i} onPress={() => go(i)} feedback="none" hitSlop={10} accessibilityLabel={`Go to step ${i + 1}`}>
-                <Animated.View style={{ width: i === index ? 30 : 8, height: 8, borderRadius: 4, backgroundColor: i === index ? C.haldi : C.night3, transitionProperty: ['width', 'backgroundColor'], transitionDuration: 260, transitionTimingFunction: CSS_EASE_OUT }} />
+                <Animated.View style={{ width: i === index ? 30 : 8, height: 8, borderRadius: 4, backgroundColor: i === index ? C.accent : C.ink4, transitionProperty: ['width', 'backgroundColor'], transitionDuration: 260, transitionTimingFunction: CSS_EASE_OUT }} />
               </Press>
             ))}
           </View>
           <Button
-            label={index === SLIDES.length - 1 ? 'Get started' : 'Next'}
+            label={index === SLIDES.length - 1 ? "Let's go" : 'Next'}
             iconRight="arrow-right-bold"
             onPress={() => go(index + 1)}
             feedback="none"

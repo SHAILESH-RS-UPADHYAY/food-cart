@@ -4,18 +4,20 @@ import { ScrollView, View } from 'react-native';
 import Animated, { FadeInDown, LinearTransition } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { api, useStallOrders, useStalls, useUnavailable, type Order, type OrderStatus } from '@/api';
-import { KITCHEN, stallState } from '@/api/rules';
-import { itemsOf, stallById } from '@/data/catalog';
+import { api, useDeals, useStallOrders, useStalls, useUnavailable, type Order, type OrderStatus } from '@/api';
+import { KITCHEN, liveDeal, stallState } from '@/api/rules';
+import { itemsOf, stallById, type Item } from '@/data/catalog';
 import { fx } from '@/lib/feedback';
-import { rupees, token } from '@/lib/format';
+import { clock, rupees, token } from '@/lib/format';
 import { useLayout } from '@/lib/layout';
 import { useSession } from '@/store/session';
 import { CapacityMeter, Hairline, StatusChip } from '@/ui/bits';
 import { Button } from '@/ui/Button';
 import { Icon } from '@/ui/Icon';
 import { CartMark } from '@/ui/Logo';
+import { DealSheet } from '@/ui/DealSheet';
 import { CSS_EASE_OUT, EASE_OUT } from '@/ui/motion';
+import { Photo } from '@/ui/Photo';
 import { Pill } from '@/ui/Pill';
 import { Press } from '@/ui/Press';
 import { T } from '@/ui/Text';
@@ -25,9 +27,9 @@ import { C, R, SHADOW } from '@/ui/theme';
 
 type Column = 'new' | 'cooking' | 'ready';
 const COLS: { key: Column; label: string; statuses: OrderStatus[]; empty: string }[] = [
-  { key: 'new', label: 'New', statuses: ['placed'], empty: 'Nothing new. Breathe.' },
-  { key: 'cooking', label: 'Cooking', statuses: ['accepted', 'preparing'], empty: 'Kitchen is clear.' },
-  { key: 'ready', label: 'Ready', statuses: ['ready'], empty: 'No one waiting at the counter.' },
+  { key: 'new', label: 'New', statuses: ['placed'], empty: 'Abhi koi naya order nahi.' },
+  { key: 'cooking', label: 'Cooking', statuses: ['accepted', 'preparing'], empty: 'Kitchen khaali hai.' },
+  { key: 'ready', label: 'Ready', statuses: ['ready'], empty: 'Counter pe koi wait nahi kar raha.' },
 ];
 const ENTER = FadeInDown.duration(280).easing(EASE_OUT);
 const REFLOW = LinearTransition.duration(220).easing(EASE_OUT);
@@ -45,9 +47,9 @@ function OrderCard({ order, fresh, now, onAct, busy }: { order: Order; fresh: bo
   const mins = Math.floor((now - order.createdAt) / 60000);
   const late = mins >= 15 ? C.chilli : mins >= 8 ? C.masala : C.ink3;
   return (
-    <Animated.View entering={ENTER} layout={REFLOW} style={[{ borderRadius: R.card, backgroundColor: C.card, padding: 16, gap: 12, borderWidth: 2, borderColor: fresh ? C.haldi : 'transparent' }, SHADOW.card]}>
+    <Animated.View entering={ENTER} layout={REFLOW} style={[{ borderRadius: R.card, backgroundColor: C.card, padding: 16, gap: 12, borderWidth: 2, borderColor: fresh ? C.accent : 'transparent' }, SHADOW.card]}>
       {fresh && (
-        <Animated.View pointerEvents="none" style={{ position: 'absolute', inset: -2, borderRadius: R.card, borderWidth: 3, borderColor: C.haldi, animationName: { from: { opacity: 1 }, to: { opacity: 0 } }, animationDuration: '900ms', animationIterationCount: 4, animationDirection: 'alternate' }} />
+        <Animated.View pointerEvents="none" style={{ position: 'absolute', inset: -2, borderRadius: R.card, borderWidth: 3, borderColor: C.accent, animationName: { from: { opacity: 1 }, to: { opacity: 0 } }, animationDuration: '900ms', animationIterationCount: 4, animationDirection: 'alternate' }} />
       )}
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
         <T v="brand" size={30} tab>{token(order.tokenNo)}</T>
@@ -58,7 +60,7 @@ function OrderCard({ order, fresh, now, onAct, busy }: { order: Order; fresh: bo
             <T v="small" color={late} tab>{mins < 1 ? 'just now' : `${mins} min`}</T>
           </View>
         </View>
-        <View style={{ paddingHorizontal: 10, height: 26, borderRadius: R.pill, justifyContent: 'center', backgroundColor: order.payment === 'cod' ? C.haldiSoft : C.leafSoft }}>
+        <View style={{ paddingHorizontal: 10, height: 26, borderRadius: R.pill, justifyContent: 'center', backgroundColor: order.payment === 'cod' ? C.accentTint : C.leafSoft }}>
           <T v="label" color={order.payment === 'cod' ? C.ink : C.leaf} style={{ fontSize: 11 }}>{order.payment === 'cod' ? `Collect ${rupees(order.total)}` : 'Paid online'}</T>
         </View>
       </View>
@@ -71,7 +73,7 @@ function OrderCard({ order, fresh, now, onAct, busy }: { order: Order; fresh: bo
         ))}
       </View>
       {order.note && (
-        <View style={{ flexDirection: 'row', gap: 8, padding: 10, borderRadius: 12, backgroundColor: C.haldiSoft }}>
+        <View style={{ flexDirection: 'row', gap: 8, padding: 10, borderRadius: 12, backgroundColor: C.accentTint }}>
           <Icon name="note-pencil-bold" size={16} />
           <T v="small" style={{ flex: 1 }}>{order.note}</T>
         </View>
@@ -106,10 +108,12 @@ export default function Console() {
   const orders = useStallOrders(stall?.id);
   const live = useStalls()[stallId ?? ''];
   const unavailable = useUnavailable();
+  const deals = useDeals();
+  const [dealItem, setDealItem] = useState<Item | null>(null);
   const insets = useSafeAreaInsets();
   const { desktop, tablet } = useLayout();
   const now = useNow();
-  const [view, setView] = useState<Column | 'menu'>('new');
+  const [view, setView] = useState<Column | 'menu' | 'deals'>('new');
   const [busyId, setBusyId] = useState<string | null>(null);
   const [fresh, setFresh] = useState<Set<string>>(new Set());
   const seen = useRef<Set<string> | null>(null);
@@ -123,7 +127,7 @@ export default function Console() {
       const arrivals = placed.filter((o) => !seen.current!.has(o.id));
       if (arrivals.length) {
         fx.alert();
-        toast(`New order ${token(arrivals[0].tokenNo)} from ${arrivals[0].customerName}`, 'bell-ringing-bold');
+        toast(`Naya order ${token(arrivals[0].tokenNo)} from ${arrivals[0].customerName}`, 'bell-ringing-bold');
         setFresh((f) => new Set([...f, ...arrivals.map((o) => o.id)]));
         setTimeout(() => setFresh((f) => new Set([...f].filter((id) => !arrivals.some((a) => a.id === id)))), 7000);
       }
@@ -177,8 +181,8 @@ export default function Console() {
           <View key={c.key} style={{ flex: 1, gap: 12 }}>
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
               <T v="h2">{c.label}</T>
-              <View style={{ minWidth: 26, height: 26, borderRadius: 13, paddingHorizontal: 8, backgroundColor: c.key === 'new' && list.length ? C.haldi : C.line, alignItems: 'center', justifyContent: 'center' }}>
-                <T v="label" tab>{list.length}</T>
+              <View style={{ minWidth: 26, height: 26, borderRadius: 13, paddingHorizontal: 8, backgroundColor: c.key === 'new' && list.length ? C.accent : C.line, alignItems: 'center', justifyContent: 'center' }}>
+                <T v="label" tab color={c.key === 'new' && list.length ? C.onAccent : C.ink}>{list.length}</T>
               </View>
             </View>
             {list.length ? list.map((o) => <OrderCard key={o.id} order={o} fresh={fresh.has(o.id)} now={now} onAct={act} busy={busyId === o.id} />)
@@ -196,22 +200,22 @@ export default function Console() {
 
   return (
     <View style={{ flex: 1, backgroundColor: C.canvas }}>
-      <View style={{ backgroundColor: C.ink, paddingTop: insets.top + 10, paddingBottom: 14 }}>
+      <View style={{ backgroundColor: C.canvas, paddingTop: insets.top + 10, paddingBottom: 14, borderBottomWidth: 1, borderBottomColor: C.line }}>
         <View style={{ width: '100%', maxWidth: 1280, alignSelf: 'center', paddingHorizontal: desktop ? 32 : 18, flexDirection: 'row', alignItems: 'center', gap: 12 }}>
-          <CartMark size={34} awning={C.haldi} stripe={C.chalk} cart={C.chalk} />
+          <CartMark size={34} />
           <View style={{ flex: 1 }}>
-            <T v="h2" color={C.chalk} numberOfLines={1}>{stall.name}</T>
-            <T v="small" color={C.nightMuted}>Stall console</T>
+            <T v="h2" numberOfLines={1}>{stall.name}</T>
+            <T v="small" color={C.ink3}>Stall console</T>
           </View>
-          <StatusChip state={state} pulse onDark />
+          <StatusChip state={state} pulse />
           {user.role === 'admin' && (
-            <Press onPress={() => router.replace('/admin')} feedback="tap" style={{ height: 40, paddingHorizontal: 14, borderRadius: R.pill, backgroundColor: C.night2, flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-              <Icon name="chart-bar-bold" size={16} color={C.chalk} />
-              {!tablet && !desktop ? null : <T v="label" color={C.chalk}>Admin</T>}
+            <Press onPress={() => router.replace('/admin')} feedback="tap" style={{ height: 40, paddingHorizontal: 14, borderRadius: R.pill, backgroundColor: C.card, flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+              <Icon name="chart-bar-bold" size={16} color={C.ink} />
+              {!tablet && !desktop ? null : <T v="label">Admin</T>}
             </Press>
           )}
-          <Press onPress={async () => { await useSession.getState().signOut(); router.replace('/staff/login'); }} feedback="tap" accessibilityLabel="Sign out" style={{ width: 40, height: 40, borderRadius: 20, backgroundColor: C.night2, alignItems: 'center', justifyContent: 'center' }}>
-            <Icon name="sign-out-bold" size={18} color={C.chalk} />
+          <Press onPress={async () => { await useSession.getState().signOut(); router.replace('/staff/login'); }} feedback="tap" accessibilityLabel="Sign out" style={{ width: 40, height: 40, borderRadius: 20, backgroundColor: C.card, alignItems: 'center', justifyContent: 'center' }}>
+            <Icon name="sign-out-bold" size={18} color={C.ink} />
           </Press>
         </View>
       </View>
@@ -260,9 +264,35 @@ export default function Console() {
             {!desktop && COLS.map((c) => <Pill key={c.key} label={c.label} count={byCol(c).length} active={view === c.key} onPress={() => setView(c.key)} />)}
             {desktop && <Pill label="Live board" icon="squares-four-bold" active={view !== 'menu'} onPress={() => setView('new')} />}
             <Pill label="Menu" icon="bowl-food-bold" active={view === 'menu'} onPress={() => setView('menu')} />
+            <Pill label="Last call" icon="hourglass-high-bold" count={itemsOf(stall.id).filter((it) => liveDeal(deals[it.id])).length} active={view === 'deals'} onPress={() => setView('deals')} />
           </ScrollView>
 
-          {view === 'menu' ? (
+          {view === 'deals' ? (
+            <View style={{ gap: 14 }}>
+              <View style={[{ backgroundColor: C.card, borderRadius: R.card, padding: 16 }, SHADOW.card]}>
+                <T v="h3">Leftovers? Sell them, don't bin them.</T>
+                <T v="body" color={C.ink2} style={{ marginTop: 4 }}>
+                  Put extra plates on last call at a lower price. Students see a countdown and the plates left, and the deal ends on its own.
+                </T>
+              </View>
+              {itemsOf(stall.id).map((it) => {
+                const d = liveDeal(deals[it.id]);
+                return (
+                  <View key={it.id} style={[{ flexDirection: 'row', alignItems: 'center', gap: 12, padding: 12, borderRadius: R.card, backgroundColor: d ? C.accentTint : C.card }]}>
+                    <Photo photo={it.photo} width={52} style={{ width: 52, height: 52, borderRadius: 12 }} />
+                    <View style={{ flex: 1 }}>
+                      <T v="bodyStrong" numberOfLines={1}>{it.name}</T>
+                      <T v="small" color={d ? C.accent : C.ink3} tab>
+                        {d ? `${rupees(d.price)} instead of ${rupees(it.price)}, ${d.left} left, ends ${clock(d.endsAt)}` : rupees(it.price)}
+                      </T>
+                    </View>
+                    {d && <Button label="End" kind="light" size="sm" onPress={() => { api.clearDeal(it.id); fx.remove(); }} />}
+                    <Button label={d ? 'Edit' : 'Last call'} kind={d ? 'dark' : 'primary'} size="sm" disabled={unavailable.has(it.id)} onPress={() => { fx.open(); setDealItem(it); }} feedback="none" />
+                  </View>
+                );
+              })}
+            </View>
+          ) : view === 'menu' ? (
             <View style={[{ backgroundColor: C.card, borderRadius: R.card, padding: 16 }, SHADOW.card]}>
               <T v="body" color={C.ink2} style={{ marginBottom: 6 }}>Switch a dish off the moment it runs out. Students see "Sold out" instantly.</T>
               {menuSections.map(([cat, list]) => (
@@ -297,6 +327,7 @@ export default function Console() {
           )}
         </View>
       </ScrollView>
+      <DealSheet item={dealItem} current={dealItem ? liveDeal(deals[dealItem.id]) : undefined} onClose={() => setDealItem(null)} />
     </View>
   );
 }

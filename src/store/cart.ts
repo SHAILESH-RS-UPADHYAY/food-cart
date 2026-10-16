@@ -2,7 +2,8 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 
-import { MAX_QTY } from '@/api/rules';
+import { useLive, type Deal } from '@/api';
+import { MAX_QTY, liveDeal } from '@/api/rules';
 import { itemById } from '@/data/catalog';
 
 type Cart = {
@@ -45,12 +46,25 @@ export const useCart = create<Cart>()(
   ),
 );
 
-export function cartSummary(qty: Record<string, number>) {
+/** What one unit costs right now: the live last-call price if there is one, else the menu price. */
+export function unitPrice(itemId: string, deals: Record<string, Deal>) {
+  return liveDeal(deals[itemId])?.price ?? itemById[itemId]?.price ?? 0;
+}
+
+export function cartSummary(qty: Record<string, number>, deals: Record<string, Deal> = {}) {
   let count = 0;
   let total = 0;
   for (const [id, n] of Object.entries(qty)) {
     count += n;
-    total += n * (itemById[id]?.price ?? 0);
+    total += n * unitPrice(id, deals);
   }
   return { count, total };
+}
+
+/** Cart count and total, priced with live deals. */
+export function useCartSummary(onlyStall?: string) {
+  const qty = useCart((s) => s.qty);
+  const stallId = useCart((s) => s.stallId);
+  const deals = useLive((s) => s.deals);
+  return cartSummary(onlyStall && onlyStall !== stallId ? {} : qty, deals);
 }

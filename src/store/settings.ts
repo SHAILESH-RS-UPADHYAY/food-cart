@@ -6,6 +6,8 @@ type Settings = {
   onboarded: boolean;
   sound: boolean;
   haptics: boolean;
+  /** chime + banner when an order is ready */
+  alerts: boolean;
   /** Demo mode only: stalls accept and cook your orders on their own. */
   autopilot: boolean;
   set: (patch: Partial<Omit<Settings, 'set'>>) => void;
@@ -13,7 +15,7 @@ type Settings = {
 
 export const useSettings = create<Settings>()(
   persist(
-    (set) => ({ onboarded: false, sound: true, haptics: true, autopilot: true, set: (patch) => set(patch) }),
+    (set) => ({ onboarded: false, sound: true, haptics: true, alerts: true, autopilot: true, set: (patch) => set(patch) }),
     { name: 'fc-settings', storage: createJSONStorage(() => AsyncStorage) },
   ),
 );

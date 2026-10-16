@@ -8,13 +8,13 @@ import Animated, {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { scheduleOnRN } from 'react-native-worklets';
 
-import { useStalls, useUnavailable } from '@/api';
-import { etaMinutes, freeSlotMinutes, stallState } from '@/api/rules';
+import { useDeals, useStalls, useUnavailable } from '@/api';
+import { etaMinutes, freeSlotMinutes, liveDeal, stallState } from '@/api/rules';
 import { itemsOf, stallById, type Category } from '@/data/catalog';
 import { fx } from '@/lib/feedback';
 import { rupees } from '@/lib/format';
 import { useLayout } from '@/lib/layout';
-import { cartSummary, useCart } from '@/store/cart';
+import { unitPrice, useCart, useCartSummary } from '@/store/cart';
 import { useNotify } from '@/store/notify';
 import { CapacityMeter, Hairline, StatusChip } from '@/ui/bits';
 import { Button } from '@/ui/Button';
@@ -38,6 +38,7 @@ export default function StallScreen() {
   const stall = stallById[id];
   const live = useStalls()[id];
   const unavailable = useUnavailable();
+  const deals = useDeals();
   const insets = useSafeAreaInsets();
   const { width, desktop, tablet } = useLayout();
   const cartStall = useCart((s) => s.stallId);
@@ -57,6 +58,7 @@ export default function StallScreen() {
     return [...map.entries()];
   }, [items]);
 
+  const stallDeals = items.filter((it) => liveDeal(deals[it.id]));
   const heroH = desktop ? 380 : tablet ? 340 : 300;
   const compactH = insets.top + 108;
 
@@ -97,7 +99,7 @@ export default function StallScreen() {
 
   const state = stallState(live);
   const blocked = state === 'full' || state === 'paused' || state === 'closed';
-  const { count, total } = cartSummary(cartStall === id ? qty : {});
+  const { count, total } = useCartSummary(id);
 
   const jump = (i: number) => {
     fx.pill();
@@ -145,7 +147,7 @@ export default function StallScreen() {
                   <View style={{ gap: 12 }}>
                     <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
                       <Icon name="fire-fill" size={22} color={C.chilli} />
-                      <T v="h3" color={C.chilli}>Kitchen full</T>
+                      <T v="h3" color={C.chilli}>Kitchen full hai</T>
                     </View>
                     <T v="h2">{fullLine(stall)}</T>
                     <T v="body" color={C.ink2}>
@@ -153,14 +155,14 @@ export default function StallScreen() {
                     </T>
                     <CapacityMeter active={live?.active ?? 0} max={live?.maxActive ?? 1} state={state} />
                     <Button
-                      label={watching ? "We'll ping you" : 'Notify me when there is room'}
+                      label={watching ? 'Bata denge, pakka' : 'Jagah hote hi batana'}
                       icon="bell-ringing-bold"
                       kind={watching ? 'light' : 'dark'}
                       size="md"
                       disabled={watching}
                       onPress={() => {
                         useNotify.getState().watch(stall.id);
-                        toast(`We'll ping you when ${stall.name} has room`, 'bell-ringing-bold');
+                        toast(`${stall.name} mein jagah hote hi batayenge`, 'bell-ringing-bold');
                       }}
                     />
                   </View>
@@ -168,15 +170,31 @@ export default function StallScreen() {
                   <View style={{ gap: 12 }}>
                     <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'baseline' }}>
                       <T v="h3">Kitchen load</T>
-                      <T v="small" color={C.ink3} tab>{live?.active ?? 0} of {live?.maxActive ?? stall.maxActive} orders cooking</T>
+                      <T v="small" color={C.ink3} tab>{live?.active ?? 0}/{live?.maxActive ?? stall.maxActive} orders on the tawa</T>
                     </View>
                     <CapacityMeter active={live?.active ?? 0} max={live?.maxActive ?? stall.maxActive} state={state} />
                     <T v="small" color={C.ink3}>
-                      {state === 'busy' ? 'Filling up fast. Order now to lock your slot.' : state === 'paused' ? 'The stall paused new orders for a bit.' : 'Plenty of room in the kitchen.'}
+                      {state === 'busy' ? 'Bheed badh rahi hai. Order now to lock your slot.' : state === 'paused' ? 'Stall ne thodi der ke liye orders roke hain.' : 'Kitchen mein jagah hai. Order away.'}
                     </T>
                   </View>
                 )}
               </Animated.View>
+
+              {stallDeals.length > 0 && (
+                <Animated.View entering={enterRise(3)} style={{ marginTop: 18, paddingHorizontal: 16, borderRadius: R.card, backgroundColor: C.accentTint }}>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, paddingTop: 16 }}>
+                    <Icon name="hourglass-high-bold" size={18} color={C.accent} />
+                    <T v="h3" color={C.accent}>Last call</T>
+                    <T v="small" color={C.ink2} style={{ flex: 1 }} numberOfLines={1}>Bacha hua, par fresh. Limited plates.</T>
+                  </View>
+                  {stallDeals.map((it, i) => (
+                    <View key={it.id}>
+                      {i > 0 && <Hairline />}
+                      <ItemRow item={it} unavailable={unavailable.has(it.id)} blocked={blocked} onConflict={setConflict} />
+                    </View>
+                  ))}
+                </Animated.View>
+              )}
 
               <View style={{ marginTop: 24, marginBottom: 4 }}>{tabs}</View>
 
@@ -208,7 +226,7 @@ export default function StallScreen() {
                       return it ? (
                         <View key={itemId} style={{ flexDirection: 'row', justifyContent: 'space-between', gap: 12 }}>
                           <T v="body" style={{ flex: 1 }} numberOfLines={1}>{n} × {it.name}</T>
-                          <T v="bodyStrong" tab>{rupees(n * it.price)}</T>
+                          <T v="bodyStrong" tab>{rupees(n * unitPrice(itemId, deals))}</T>
                         </View>
                       ) : null;
                     })}

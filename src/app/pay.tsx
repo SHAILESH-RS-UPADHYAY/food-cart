@@ -7,7 +7,7 @@ import { stallById } from '@/data/catalog';
 import { fx } from '@/lib/feedback';
 import { rupees } from '@/lib/format';
 import { usePlaceOrder } from '@/lib/place-order';
-import { cartSummary, useCart } from '@/store/cart';
+import { useCart, useCartSummary } from '@/store/cart';
 import { Button } from '@/ui/Button';
 import { Field } from '@/ui/Field';
 import { Icon } from '@/ui/Icon';
@@ -34,8 +34,7 @@ const prettyExpiry = (s: string) => {
 /** Demo checkout: shows the future online-payment flow. Nothing is charged, ever. */
 export default function Pay() {
   const stallId = useCart((s) => s.stallId);
-  const qty = useCart((s) => s.qty);
-  const { total } = cartSummary(qty);
+  const { total } = useCartSummary();
   const { place } = usePlaceOrder();
   const [method, setMethod] = useState<Method>('upi');
   const [upi, setUpi] = useState('');
@@ -83,13 +82,13 @@ export default function Pay() {
 
   if (phase !== 'form') {
     return (
-      <View style={{ flex: 1, backgroundColor: C.night, alignItems: 'center', justifyContent: 'center', padding: 28, gap: 22 }}>
+      <View style={{ flex: 1, backgroundColor: C.canvas, alignItems: 'center', justifyContent: 'center', padding: 28, gap: 22 }}>
         <View style={{ width: 132, height: 132, alignItems: 'center', justifyContent: 'center' }}>
           {phase === 'processing' && [0, 1, 2].map((i) => (
             <Animated.View
               key={i}
               style={{
-                position: 'absolute', width: 132, height: 132, borderRadius: 66, borderWidth: 2, borderColor: C.haldi, opacity: 0,
+                position: 'absolute', width: 132, height: 132, borderRadius: 66, borderWidth: 2, borderColor: C.accent, opacity: 0,
                 animationName: { from: { opacity: 0.7, transform: [{ scale: 0.55 }] }, to: { opacity: 0, transform: [{ scale: 1.15 }] } },
                 animationDuration: '1500ms', animationDelay: i * 500, animationIterationCount: 'infinite', animationTimingFunction: CSS_EASE_OUT,
               }}
@@ -99,19 +98,19 @@ export default function Pay() {
             key={phase}
             style={{
               width: 88, height: 88, borderRadius: 44, alignItems: 'center', justifyContent: 'center',
-              backgroundColor: phase === 'paid' ? C.leaf : phase === 'failed' ? C.chilli : C.haldi,
+              backgroundColor: phase === 'paid' ? C.leaf : phase === 'failed' ? C.chilli : C.accent,
               animationName: { from: { transform: [{ scale: 0.6 }] }, to: { transform: [{ scale: 1 }] } },
               animationDuration: '420ms', animationTimingFunction: BOUNCE,
             }}
           >
-            <Icon name={phase === 'paid' ? 'check-bold' : phase === 'failed' ? 'x-bold' : 'lock-simple-bold'} size={40} color={phase === 'processing' ? C.ink : C.chalk} />
+            <Icon name={phase === 'paid' ? 'check-bold' : phase === 'failed' ? 'x-bold' : 'lock-simple-bold'} size={40} color={C.chalk} />
           </Animated.View>
         </View>
         <Animated.View key={`t-${phase}`} entering={FadeIn.duration(200)} style={{ alignItems: 'center', gap: 8, maxWidth: 360 }}>
-          <T v="h1" color={C.nightText} center>
-            {phase === 'processing' ? (method === 'upi' ? 'Approve in your UPI app' : 'Talking to your bank') : phase === 'paid' ? `${rupees(total)} paid` : 'Payment failed'}
+          <T v="h1" color={C.ink} center>
+            {phase === 'processing' ? (method === 'upi' ? 'Approve in your UPI app' : 'Talking to your bank') : phase === 'paid' ? `${rupees(total)} paid` : 'Payment fail ho gaya'}
           </T>
-          <T v="body" color={C.nightMuted} center>
+          <T v="body" color={C.ink3} center>
             {phase === 'processing' ? `Request sent to ${method === 'upi' ? upi.trim() : `card ending ${cardDigits(card).slice(-4)}`}. Demo only, nothing is charged.`
               : phase === 'paid' ? `Sending your order to ${stallById[stallId].name}.`
               : 'Your bank declined this one. No money left your account.'}
@@ -120,7 +119,7 @@ export default function Pay() {
         {phase === 'failed' && (
           <View style={{ width: '100%', maxWidth: 360, gap: 10 }}>
             <Button label="Try again" onPress={() => setPhase('form')} block />
-            <Button label="Pay at counter instead" kind="quiet" onPress={() => router.back()} block style={{ backgroundColor: C.night2 }} />
+            <Button label="Pay at counter instead" kind="quiet" onPress={() => router.back()} block style={{ backgroundColor: C.card }} />
           </View>
         )}
       </View>
@@ -130,7 +129,7 @@ export default function Pay() {
   return (
     <StackPage title="Checkout" footer={<Button label={`Pay ${rupees(total)}`} icon="lock-simple-bold" onPress={pay} block />}>
       <View style={{ width: '100%', maxWidth: 560, alignSelf: 'center', gap: 18 }}>
-        <Animated.View entering={enterRise(0)} style={{ flexDirection: 'row', gap: 10, padding: 14, borderRadius: R.input, backgroundColor: C.haldiSoft }}>
+        <Animated.View entering={enterRise(0)} style={{ flexDirection: 'row', gap: 10, padding: 14, borderRadius: R.input, backgroundColor: C.accentTint }}>
           <Icon name="info-bold" size={18} />
           <T v="small" style={{ flex: 1 }}>Demo checkout. This shows how paying online will work. No real payment is made.</T>
         </Animated.View>

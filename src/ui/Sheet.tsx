@@ -14,13 +14,13 @@ import { Press } from './Press';
 import { T } from './Text';
 import { C, R } from './theme';
 
-type Props = { visible: boolean; onClose: () => void; title?: string; children: ReactNode; dark?: boolean };
+type Props = { visible: boolean; onClose: () => void; title?: string; children: ReactNode };
 
 /**
  * Bottom sheet on phones (drag down or tap outside to close), centred dialog on desktop.
  * One shared value drives panel and backdrop so they can never drift apart.
  */
-export function Sheet({ visible, onClose, title, children, dark }: Props) {
+export function Sheet({ visible, onClose, title, children }: Props) {
   const [mounted, setMounted] = useState(visible);
   const { height } = useWindowDimensions();
   const { desktop } = useLayout();
@@ -78,8 +78,8 @@ export function Sheet({ visible, onClose, title, children, dark }: Props) {
   const backdrop = useAnimatedStyle(() => ({ opacity: interpolate(y.get(), [0, travel], [1, 0], Extrapolation.CLAMP) }));
 
   if (!mounted) return null;
-  const bg = dark ? C.night : C.card;
-  const fg = dark ? C.nightText : C.ink;
+  const bg = C.canvas;
+  const fg = C.ink;
   return (
     <Modal transparent visible animationType="none" statusBarTranslucent onRequestClose={close}>
       <Animated.View style={[{ position: 'absolute', inset: 0, backgroundColor: C.scrim }, backdrop]}>
@@ -98,10 +98,10 @@ export function Sheet({ visible, onClose, title, children, dark }: Props) {
               panel,
             ]}
           >
-            {!desktop && <View style={{ alignSelf: 'center', width: 44, height: 5, borderRadius: 3, backgroundColor: dark ? C.night3 : C.line, marginTop: 10 }} />}
+            {!desktop && <View style={{ alignSelf: 'center', width: 44, height: 5, borderRadius: 3, backgroundColor: C.line, marginTop: 10 }} />}
             <View style={{ flexDirection: 'row', alignItems: 'center', paddingHorizontal: 22, paddingTop: desktop ? 20 : 12, paddingBottom: 6, gap: 12 }}>
               <T v="h2" color={fg} style={{ flex: 1 }}>{title}</T>
-              <Press onPress={close} feedback="none" accessibilityLabel="Close" style={{ width: 36, height: 36, borderRadius: 18, backgroundColor: dark ? C.night2 : C.canvas, alignItems: 'center', justifyContent: 'center' }}>
+              <Press onPress={close} feedback="none" accessibilityLabel="Close" style={{ width: 36, height: 36, borderRadius: 18, backgroundColor: C.card, alignItems: 'center', justifyContent: 'center' }}>
                 <Icon name="x-bold" size={16} color={fg} />
               </Press>
             </View>

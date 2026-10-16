@@ -4,11 +4,11 @@ export const token = (n: number) => `#${String(n).padStart(3, '0')}`;
 
 export function greeting(now = new Date()) {
   const h = now.getHours();
-  if (h < 5) return { hello: 'Up late', head: 'Midnight cravings?', sub: 'A few stalls are still cooking. Order ahead, walk over.' };
-  if (h < 11) return { hello: 'Good morning', head: 'Breakfast before class?', sub: "Order now, grab it on the way to your 9 o'clock." };
-  if (h < 15) return { hello: 'Good afternoon', head: 'Lunch rush is on.', sub: 'Skip the queue. Order ahead and pick it up hot.' };
-  if (h < 19) return { hello: 'Good evening', head: 'Chai break?', sub: 'Shakes, chai and snacks, ready when you are.' };
-  return { hello: 'Good evening', head: 'Dinner, sorted.', sub: 'Two taps, then walk over when your token is ready.' };
+  if (h < 5) return { hello: 'Up late', head: 'Raat ki bhookh ka ilaaj.', sub: 'A few stalls are still cooking. Order now, walk over.' };
+  if (h < 11) return { hello: 'Good morning', head: 'Pehle nashta, phir class.', sub: "Order now, grab it on the way to your 9 o'clock." };
+  if (h < 15) return { hello: 'Good afternoon', head: 'Lunch ka time ho gaya.', sub: 'Skip the queue. Order ahead, pick it up hot.' };
+  if (h < 19) return { hello: 'Good evening', head: 'Chai break banta hai.', sub: 'Shakes, chai and snacks, ready when you are.' };
+  return { hello: 'Good evening', head: 'Dinner ka plan, done.', sub: 'Two taps, then walk over when your token is ready.' };
 }
 
 export function ago(ts: number, now = Date.now()) {

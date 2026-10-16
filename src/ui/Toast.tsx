@@ -43,8 +43,8 @@ export function ToastHost() {
           exiting={OUT}
           style={[{ flexDirection: 'row', alignItems: 'center', gap: 10, maxWidth: 440, backgroundColor: C.ink, paddingVertical: 12, paddingHorizontal: 16, borderRadius: R.pill }, SHADOW.float]}
         >
-          <View style={{ width: 26, height: 26, borderRadius: 13, alignItems: 'center', justifyContent: 'center', backgroundColor: t.tone === 'leaf' ? C.leaf : t.tone === 'chilli' ? C.chilli : C.haldi }}>
-            <Icon name={t.icon} size={15} color={t.tone === 'ink' ? C.ink : C.chalk} />
+          <View style={{ width: 26, height: 26, borderRadius: 13, alignItems: 'center', justifyContent: 'center', backgroundColor: t.tone === 'leaf' ? C.leaf : t.tone === 'chilli' ? C.chilli : C.accent }}>
+            <Icon name={t.icon} size={15} color={C.chalk} />
           </View>
           <T v="bodyStrong" color={C.chalk} style={{ flexShrink: 1 }}>{t.text}</T>
         </Animated.View>

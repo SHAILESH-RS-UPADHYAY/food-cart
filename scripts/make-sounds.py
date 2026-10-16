@@ -153,6 +153,9 @@ KIT = {
         (marimba(N['F#6'], 0.12), 0.34, 0.25), (marimba(N['A6'], 0.12), 0.37, 0.25),
         (marimba(N['C#7'], 0.16), 0.40, 0.25)), 0.2, 0.6), -5),
     'stamp': lambda: finish(thump(), -8),
+    # cookie consent: three quick, dry crunches
+    'crunch': lambda: finish(layer(*[(bandpass(rng.standard_normal(int(SR * 0.05)), 900, 5200) * np.exp(-secs(0.05) / 0.012), t, g)
+                                    for t, g in ((0, 1), (0.06, 0.8), (0.13, 0.65))]), -12),
     'coin': lambda: finish(room(layer((bell(N['B6'], 0.16, 2.4, 2.2), 0, 1), (bell(N['E7'], 0.22, 2.4, 2.0), 0.09, 1)), 0.15, 0.3), -8),
     'alert': lambda: finish(room(layer(
         (layer((bell(N['A5'], 0.4, 2.0, 1.4), 0, 0.8), (marimba(N['A5'], 0.3), 0, 0.6)), 0.00, 1),

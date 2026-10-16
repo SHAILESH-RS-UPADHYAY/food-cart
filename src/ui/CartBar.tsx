@@ -4,7 +4,7 @@ import Animated, { SlideInDown, SlideOutDown } from 'react-native-reanimated';
 
 import { stallById } from '@/data/catalog';
 import { rupees } from '@/lib/format';
-import { cartSummary, useCart } from '@/store/cart';
+import { useCart, useCartSummary } from '@/store/cart';
 
 import { Icon } from './Icon';
 import { CSS_EASE_OUT, EASE_OUT } from './motion';
@@ -17,9 +17,8 @@ const OUT = SlideOutDown.duration(220);
 
 /** Floating "view cart" bar. Bumps whenever the item count changes. */
 export function CartBar({ bottom }: { bottom: number }) {
-  const qty = useCart((s) => s.qty);
   const stallId = useCart((s) => s.stallId);
-  const { count, total } = cartSummary(qty);
+  const { count, total } = useCartSummary();
   if (!count || !stallId) return null;
   return (
     <Animated.View entering={IN} exiting={OUT} style={{ position: 'absolute', left: 14, right: 14, bottom, alignItems: 'center' }}>
@@ -27,20 +26,20 @@ export function CartBar({ bottom }: { bottom: number }) {
         <Animated.View
           key={count}
           style={{
-            height: 62, borderRadius: R.pill, backgroundColor: C.haldi, flexDirection: 'row', alignItems: 'center', paddingLeft: 8, paddingRight: 20, gap: 12,
+            height: 62, borderRadius: R.pill, backgroundColor: C.accent, flexDirection: 'row', alignItems: 'center', paddingLeft: 8, paddingRight: 20, gap: 12,
             animationName: { '0%': { transform: [{ scale: 1 }] }, '35%': { transform: [{ scale: 1.035 }] }, '100%': { transform: [{ scale: 1 }] } },
             animationDuration: '300ms', animationTimingFunction: CSS_EASE_OUT,
           }}
         >
-          <View style={{ width: 46, height: 46, borderRadius: 23, backgroundColor: C.ink, alignItems: 'center', justifyContent: 'center' }}>
-            <T v="h3" color={C.haldi} tab>{count}</T>
+          <View style={{ width: 46, height: 46, borderRadius: 23, backgroundColor: C.canvas, alignItems: 'center', justifyContent: 'center' }}>
+            <T v="h3" color={C.accent} tab>{count}</T>
           </View>
           <View style={{ flex: 1 }}>
-            <T v="bodyStrong" numberOfLines={1}>{rupees(total)}</T>
-            <T v="small" color={C.ink2} numberOfLines={1}>from {stallById[stallId].name}</T>
+            <T v="bodyStrong" color={C.onAccent} numberOfLines={1}>{rupees(total)}</T>
+            <T v="small" color="rgba(255,255,255,0.8)" numberOfLines={1}>from {stallById[stallId].name}</T>
           </View>
-          <T v="bodyStrong">View cart</T>
-          <Icon name="arrow-right-bold" size={18} />
+          <T v="bodyStrong" color={C.onAccent}>View cart</T>
+          <Icon name="arrow-right-bold" size={18} color={C.onAccent} />
         </Animated.View>
       </Press>
     </Animated.View>

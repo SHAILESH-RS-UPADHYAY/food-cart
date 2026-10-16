@@ -42,7 +42,7 @@ export function LikeButton({ kind, id, size = 22, onPhoto }: { kind: 'stalls' | 
               key={a}
               style={{
                 position: 'absolute', left: box / 2 - 2.5, top: box / 2 - 2.5, width: 5, height: 5, borderRadius: 3,
-                backgroundColor: a % 120 === 0 ? C.haldi : C.chilli,
+                backgroundColor: a % 120 === 0 ? C.accent : C.chilli,
                 animationName: {
                   from: { opacity: 1, transform: [{ rotate: `${a}deg` }, { translateY: 0 }, { scale: 1 }] },
                   to: { opacity: 0, transform: [{ rotate: `${a}deg` }, { translateY: -box * 0.62 }, { scale: 0.4 }] },

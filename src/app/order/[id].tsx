@@ -32,13 +32,13 @@ const STEPS: { status: OrderStatus; label: string; icon: IconName }[] = [
 const RANK: Record<OrderStatus, number> = { placed: 0, accepted: 1, preparing: 2, ready: 3, collected: 4, cancelled: -1, rejected: -1 };
 
 const COPY: Record<OrderStatus, { head: string; sub: string }> = {
-  placed: { head: 'Sent to the kitchen', sub: 'Waiting for the stall to say yes.' },
-  accepted: { head: 'Chef said yes', sub: 'Your order is next on the line.' },
-  preparing: { head: 'On the tawa', sub: "It's cooking. Head over when we buzz you." },
-  ready: { head: 'Hot at the counter', sub: 'Show your code and grab it.' },
-  collected: { head: 'Collected. Enjoy!', sub: 'Thanks for skipping the queue.' },
-  cancelled: { head: 'Order cancelled', sub: 'Nothing was charged.' },
-  rejected: { head: "The stall couldn't take this one", sub: 'Usually an item ran out. Try another dish or stall.' },
+  placed: { head: 'Kitchen tak pahunch gaya', sub: 'Waiting for the stall to accept.' },
+  accepted: { head: 'Chef ne haan bol diya', sub: 'Your order is next on the line.' },
+  preparing: { head: 'Tawa garam hai', sub: "It's cooking. Walk over when we buzz you." },
+  ready: { head: 'Counter pe ready hai', sub: 'Show your code and grab it.' },
+  collected: { head: 'Enjoy karo!', sub: 'Thanks for skipping the queue.' },
+  cancelled: { head: 'Order cancel ho gaya', sub: 'Nothing was charged.' },
+  rejected: { head: 'Stall ye order nahi le paaya', sub: 'Usually an item ran out. Try another dish or stall.' },
 };
 
 /** Seconds until ready: demo kitchens are compressed, live ones use the stall's ETA. */
@@ -60,20 +60,20 @@ function Celebration({ order, onDone }: { order: Order; onDone: () => void }) {
     return () => clearTimeout(t);
   }, []);
   return (
-    <Animated.View exiting={FadeOut.duration(260)} style={{ position: 'absolute', inset: 0, zIndex: 30, backgroundColor: C.night }}>
+    <Animated.View exiting={FadeOut.duration(260)} style={{ position: 'absolute', inset: 0, zIndex: 30, backgroundColor: C.accent }}>
       <Pressable onPress={onDone} style={{ flex: 1, alignItems: 'center', justifyContent: 'center', padding: 24 }} accessibilityLabel="Continue">
         <Animated.View
           style={{
-            width: 104, height: 104, borderRadius: 52, backgroundColor: C.haldi, alignItems: 'center', justifyContent: 'center',
+            width: 104, height: 104, borderRadius: 52, backgroundColor: C.canvas, alignItems: 'center', justifyContent: 'center',
             animationName: { from: { opacity: 0, transform: [{ scale: 0.4 }, { rotate: '-30deg' }] }, to: { opacity: 1, transform: [{ scale: 1 }, { rotate: '0deg' }] } },
             animationDuration: '560ms', animationTimingFunction: BOUNCE,
           }}
         >
-          <Icon name="check-bold" size={52} color={C.ink} />
+          <Icon name="check-bold" size={52} color={C.accent} />
         </Animated.View>
         <Animated.View style={{ alignItems: 'center', marginTop: 26, opacity: 0, animationName: { from: { opacity: 0, transform: [{ translateY: 18 }] }, to: { opacity: 1, transform: [{ translateY: 0 }] } }, animationDuration: '460ms', animationDelay: 220, animationFillMode: 'forwards', animationTimingFunction: CSS_EASE_OUT }}>
-          <T v="brand" size={46} color={C.chalk} center>Order placed!</T>
-          <T v="h3" color={C.nightMuted} center style={{ marginTop: 6 }}>
+          <T v="brand" size={46} color={C.chalk} center>Ho gaya order!</T>
+          <T v="h3" color="rgba(255,255,255,0.82)" center style={{ marginTop: 6 }}>
             Token {token(order.tokenNo)} at {stallById[order.stallId].name}
           </T>
         </Animated.View>
@@ -159,22 +159,22 @@ export default function OrderScreen() {
                       <View key={s.status} style={{ flex: i === 0 ? undefined : 1, flexDirection: 'row', alignItems: 'flex-start' }}>
                         {i > 0 && (
                           <View style={{ flex: 1, height: 4, borderRadius: 2, backgroundColor: C.line, marginTop: 18, marginHorizontal: 4, overflow: 'hidden' }}>
-                            <Animated.View style={{ flex: 1, backgroundColor: C.haldi, transformOrigin: 'left', transform: [{ scaleX: on ? 1 : 0 }], transitionProperty: 'transform', transitionDuration: 520, transitionTimingFunction: CSS_EASE_IN_OUT }} />
+                            <Animated.View style={{ flex: 1, backgroundColor: C.accent, transformOrigin: 'left', transform: [{ scaleX: on ? 1 : 0 }], transitionProperty: 'transform', transitionDuration: 520, transitionTimingFunction: CSS_EASE_IN_OUT }} />
                           </View>
                         )}
                         <View style={{ alignItems: 'center', gap: 8, width: 62 }}>
                           <View style={{ width: 40, height: 40 }}>
                             {now && i < 3 && (
-                              <Animated.View style={{ position: 'absolute', inset: 0, borderRadius: 20, backgroundColor: C.haldi, animationName: { from: { opacity: 0.55, transform: [{ scale: 1 }] }, to: { opacity: 0, transform: [{ scale: 1.7 }] } }, animationDuration: '1400ms', animationIterationCount: 'infinite', animationTimingFunction: CSS_EASE_OUT }} />
+                              <Animated.View style={{ position: 'absolute', inset: 0, borderRadius: 20, backgroundColor: C.accent, animationName: { from: { opacity: 0.55, transform: [{ scale: 1 }] }, to: { opacity: 0, transform: [{ scale: 1.7 }] } }, animationDuration: '1400ms', animationIterationCount: 'infinite', animationTimingFunction: CSS_EASE_OUT }} />
                             )}
                             <Animated.View
                               style={{
                                 width: 40, height: 40, borderRadius: 20, alignItems: 'center', justifyContent: 'center',
-                                backgroundColor: on ? (i === 3 ? C.leaf : C.haldi) : C.canvas,
+                                backgroundColor: on ? (i === 3 ? C.leaf : C.accent) : C.card,
                                 transitionProperty: 'backgroundColor', transitionDuration: 260,
                               }}
                             >
-                              <Icon name={s.icon} size={18} color={on ? (i === 3 ? C.chalk : C.ink) : C.ink4} />
+                              <Icon name={s.icon} size={18} color={on ? C.chalk : C.ink4} />
                             </Animated.View>
                           </View>
                           <T v="label" color={on ? C.ink : C.ink3} style={{ fontSize: 11 }}>{s.label}</T>
@@ -202,7 +202,7 @@ export default function OrderScreen() {
                 code={order.pickupCode}
                 qrValue={`foodcart:${order.id}:${order.pickupCode}`}
                 stamp={stamp}
-                stampTone={dead ? 'chilli' : 'leaf'}
+                stampTone={dead ? 'chilli' : 'stamp'}
               />
             </Animated.View>
           </View>
@@ -220,7 +220,7 @@ export default function OrderScreen() {
                 </View>
               ))}
               {order.note && (
-                <View style={{ padding: 10, borderRadius: 12, backgroundColor: C.haldiSoft }}>
+                <View style={{ padding: 10, borderRadius: 12, backgroundColor: C.accentTint }}>
                   <T v="small">Note: {order.note}</T>
                 </View>
               )}

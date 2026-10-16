@@ -66,15 +66,15 @@ export function SlideToConfirm({ label, onConfirm, disabled }: { label: string; 
       accessibilityLabel={label}
       accessibilityActions={[{ name: 'activate' }]}
       onAccessibilityAction={() => !disabled && onConfirm()}
-      style={{ height: KNOB + PAD * 2, borderRadius: R.pill, backgroundColor: disabled ? C.ink3 : C.ink, justifyContent: 'center', overflow: 'hidden' }}
+      style={{ height: KNOB + PAD * 2, borderRadius: R.pill, backgroundColor: disabled ? C.ink4 : C.accent, justifyContent: 'center', overflow: 'hidden' }}
     >
-      <Animated.View style={[{ position: 'absolute', left: 0, top: 0, bottom: 0, borderRadius: R.pill, backgroundColor: C.haldiDeep, opacity: 0.25 }, fill]} />
+      <Animated.View style={[{ position: 'absolute', left: 0, top: 0, bottom: 0, borderRadius: R.pill, backgroundColor: '#FFFFFF', opacity: 0.16 }, fill]} />
       <Animated.View style={[{ position: 'absolute', left: KNOB + 18, right: 18, alignItems: 'center' }, text]} pointerEvents="none">
         <T v="bodyStrong" color={C.chalk} numberOfLines={1} style={{ fontSize: 16 }}>{label}</T>
       </Animated.View>
       <GestureDetector gesture={pan}>
-        <Animated.View style={[{ position: 'absolute', left: PAD, width: KNOB, height: KNOB, borderRadius: KNOB / 2, backgroundColor: C.haldi, alignItems: 'center', justifyContent: 'center' }, knob]}>
-          <Icon name="arrow-right-bold" size={24} color={C.ink} />
+        <Animated.View style={[{ position: 'absolute', left: PAD, width: KNOB, height: KNOB, borderRadius: KNOB / 2, backgroundColor: C.canvas, alignItems: 'center', justifyContent: 'center' }, knob]}>
+          <Icon name="arrow-right-bold" size={24} color={C.accent} />
         </Animated.View>
       </GestureDetector>
     </View>

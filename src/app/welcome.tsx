@@ -34,21 +34,21 @@ export default function Welcome() {
   };
 
   return (
-    <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1, backgroundColor: C.night }}>
+    <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1, backgroundColor: C.canvas }}>
       <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={{ flexGrow: 1, paddingTop: insets.top + 40, paddingBottom: insets.bottom + 24, paddingHorizontal: 22, alignItems: 'center' }}>
         <View style={{ width: '100%', maxWidth: 440, flex: 1, justifyContent: 'center', gap: 26 }}>
           <Animated.View entering={enterRise(0)}>
             {isStudentEmail(user?.email) && (
-              <View style={{ alignSelf: 'flex-start', flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 12, height: 30, borderRadius: R.pill, backgroundColor: C.night2, marginBottom: 18 }}>
-                <Icon name="seal-check-fill" size={16} color={C.haldi} />
-                <T v="label" color={C.nightText}>CU student verified</T>
+              <View style={{ alignSelf: 'flex-start', flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 12, height: 30, borderRadius: R.pill, backgroundColor: C.card, marginBottom: 18 }}>
+                <Icon name="seal-check-fill" size={16} color={C.accent} />
+                <T v="label" color={C.ink}>CU student verified</T>
               </View>
             )}
-            <T v="display" color={C.nightText}>What should the stalls call you?</T>
-            <T v="body" color={C.nightMuted} style={{ marginTop: 10, fontSize: 16 }}>Your name goes on the token, so the counter knows it's yours.</T>
+            <T v="display" color={C.ink}>Token pe naam kya likhein?</T>
+            <T v="body" color={C.ink3} style={{ marginTop: 10, fontSize: 16 }}>Your first name goes on every token, so the counter knows it's yours.</T>
           </Animated.View>
           <Animated.View entering={enterRise(1)}>
-            <Field dark label="First name" value={name} onChangeText={setName} placeholder="Simran" autoCapitalize="words" autoComplete="given-name" autoFocus onSubmitEditing={save} maxLength={24} />
+            <Field label="First name" value={name} onChangeText={setName} placeholder="Simran" autoCapitalize="words" autoComplete="given-name" autoFocus onSubmitEditing={save} maxLength={24} />
           </Animated.View>
           <Animated.View entering={enterRise(2)}>
             <Button label="Let's eat" iconRight="arrow-right-bold" onPress={save} loading={busy} disabled={!ok} block />

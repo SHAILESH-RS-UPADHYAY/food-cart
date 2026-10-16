@@ -39,13 +39,13 @@ export default function Admin() {
 
   return (
     <View style={{ flex: 1, backgroundColor: C.canvas }}>
-      <View style={{ backgroundColor: C.ink, paddingTop: insets.top + 10, paddingBottom: 22 }}>
+      <View style={{ backgroundColor: C.canvas, paddingTop: insets.top + 10, paddingBottom: 22, borderBottomWidth: 1, borderBottomColor: C.line }}>
         <View style={{ width: '100%', maxWidth: 1280, alignSelf: 'center', paddingHorizontal: pad, gap: 18 }}>
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
-            <CartMark size={34} awning={C.haldi} stripe={C.chalk} cart={C.chalk} />
-            <T v="h2" color={C.chalk} style={{ flex: 1 }}>Campus overview</T>
-            <Press onPress={async () => { await useSession.getState().signOut(); router.replace('/staff/login'); }} feedback="tap" accessibilityLabel="Sign out" style={{ width: 40, height: 40, borderRadius: 20, backgroundColor: C.night2, alignItems: 'center', justifyContent: 'center' }}>
-              <Icon name="sign-out-bold" size={18} color={C.chalk} />
+            <CartMark size={34} />
+            <T v="h2" style={{ flex: 1 }}>Campus overview</T>
+            <Press onPress={async () => { await useSession.getState().signOut(); router.replace('/staff/login'); }} feedback="tap" accessibilityLabel="Sign out" style={{ width: 40, height: 40, borderRadius: 20, backgroundColor: C.card, alignItems: 'center', justifyContent: 'center' }}>
+              <Icon name="sign-out-bold" size={18} color={C.ink} />
             </Press>
           </View>
           <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 28 }}>
@@ -54,9 +54,9 @@ export default function Admin() {
               { k: 'Stalls open', v: `${open}/${STALLS.length}`, s: full ? `${full} at full capacity` : 'All kitchens have room' },
             ].map((m) => (
               <View key={m.k}>
-                <T v="small" color={C.nightMuted}>{m.k}</T>
-                <T v="display" color={C.chalk} tab>{m.v}</T>
-                <T v="small" color={C.nightMuted}>{m.s}</T>
+                <T v="small" color={C.ink3}>{m.k}</T>
+                <T v="display" color={C.accent} tab>{m.v}</T>
+                <T v="small" color={C.ink3}>{m.s}</T>
               </View>
             ))}
           </View>

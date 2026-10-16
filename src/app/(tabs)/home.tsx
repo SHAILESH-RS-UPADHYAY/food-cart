@@ -2,13 +2,13 @@ import { useMemo, useState } from 'react';
 import { Platform, ScrollView, TextInput, View } from 'react-native';
 import Animated from 'react-native-reanimated';
 
-import { api, useStalls, useUnavailable } from '@/api';
-import { etaMinutes, stallState } from '@/api/rules';
-import { CATEGORIES, ITEMS, STALLS, stallById, type Category } from '@/data/catalog';
+import { api, useDeals, useStalls, useUnavailable } from '@/api';
+import { etaMinutes, liveDeal, percentOff, stallState } from '@/api/rules';
+import { CATEGORIES, ITEMS, STALLS, itemById, stallById, type Category } from '@/data/catalog';
 import { firstName, greeting } from '@/lib/format';
 import { useLayout, useTabInsets } from '@/lib/layout';
 import { useSession } from '@/store/session';
-import { ItemRow, StallCard, StallMini } from '@/ui/cards';
+import { DealCard, ItemRow, StallCard, StallMini } from '@/ui/cards';
 import { Hairline } from '@/ui/bits';
 import { Icon } from '@/ui/Icon';
 import { CSS_EASE_OUT, enterRise } from '@/ui/motion';
@@ -25,6 +25,7 @@ export default function Home() {
   const user = useSession((s) => s.user);
   const live = useStalls();
   const unavailable = useUnavailable();
+  const deals = useDeals();
   const { width, desktop, tablet } = useLayout();
   const pad = useTabInsets();
   const [query, setQuery] = useState('');
@@ -43,6 +44,12 @@ export default function Home() {
       .sort((a, b) => etaMinutes(a.avgPrepMin, live[a.id]) - etaMinutes(b.avgPrepMin, live[b.id])).slice(0, 5),
     [live],
   );
+
+  const dealList = Object.values(deals)
+    .filter((d) => liveDeal(d) && !unavailable.has(d.itemId))
+    .sort((a, b) => a.endsAt - b.endsAt);
+  const maxOff = dealList.reduce((m, d) => Math.max(m, percentOff(itemById[d.itemId].price, d.price)), 0);
+  const isBlocked = (stallId: string) => ['full', 'paused', 'closed'].includes(stallState(live[stallId]));
 
   const q = norm(query.trim());
   const filtering = !!q || !!cat;
@@ -71,7 +78,7 @@ export default function Home() {
               <TextInput
                 value={query}
                 onChangeText={setQuery}
-                placeholder="Search momos, cold coffee, pizza"
+                placeholder="Momos, cold coffee, pizza..."
                 placeholderTextColor={C.ink3}
                 accessibilityLabel="Search dishes and stalls"
                 returnKeyType="search"
@@ -83,12 +90,12 @@ export default function Home() {
                 </Press>
               )}
             </View>
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, height: 54, paddingHorizontal: 18, borderRadius: R.pill, backgroundColor: C.ink, alignSelf: desktop ? 'auto' : 'flex-start' }}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, height: 54, paddingHorizontal: 18, borderRadius: R.pill, backgroundColor: C.accentTint, alignSelf: desktop ? 'auto' : 'flex-start' }}>
               <View style={{ width: 9, height: 9 }}>
                 <Animated.View style={{ position: 'absolute', inset: 0, borderRadius: 5, backgroundColor: '#5BD38B', animationName: { from: { opacity: 0.6, transform: [{ scale: 1 }] }, to: { opacity: 0, transform: [{ scale: 2.6 }] } }, animationDuration: '1600ms', animationIterationCount: 'infinite', animationTimingFunction: CSS_EASE_OUT }} />
                 <View style={{ width: 9, height: 9, borderRadius: 5, backgroundColor: '#5BD38B' }} />
               </View>
-              <T v="bodyStrong" color={C.chalk} tab>{cooking || 'Many'} orders cooking on campus</T>
+              <T v="bodyStrong" color={C.accent} tab>{cooking || 'Many'} orders on the tawa right now</T>
             </View>
           </Animated.View>
         </Column>
@@ -107,7 +114,7 @@ export default function Home() {
             <View key={`${q}|${cat}`}>
               <SectionTitle title={dishes.length ? `${dishes.length} dish${dishes.length === 1 ? '' : 'es'}` : 'Nothing matches yet'} />
               {!dishes.length && (
-                <T v="body" color={C.ink2}>Try "chai", "momos" or a stall name. Every stall's full menu is one tap away below.</T>
+                <T v="body" color={C.ink2}>Kuch nahi mila. Try "chai", "momos" or a stall name.</T>
               )}
               <View style={{ flexDirection: desktop ? 'row' : 'column', flexWrap: 'wrap', columnGap: 28 }}>
                 {dishes.map((d, i) => (
@@ -120,7 +127,7 @@ export default function Home() {
             </View>
           ) : (
             <>
-              <SectionTitle title="Fastest right now" />
+              <SectionTitle title="Sabse jaldi ready" />
             </>
           )}
         </Column>
@@ -135,8 +142,24 @@ export default function Home() {
           </ScrollView>
         )}
 
+        {!filtering && dealList.length > 0 && (
+          <>
+            <Column>
+              <SectionTitle title="Last call deals" right={<T v="label" color={C.accent} tab>Up to {maxOff}% off</T>} />
+              <T v="body" color={C.ink2} style={{ marginTop: -6, marginBottom: 14 }}>Aaj ka extra, kam daam mein. Fresh from today's batch, limited plates.</T>
+            </Column>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 14, paddingHorizontal: gutter + Math.max(0, (width - 1180) / 2) }}>
+              {dealList.map((d, i) => (
+                <Animated.View key={d.itemId} entering={enterRise(i, 160)}>
+                  <DealCard item={itemById[d.itemId]} deal={d} width={desktop ? 240 : 208} blocked={isBlocked(d.stallId)} onConflict={setConflict} />
+                </Animated.View>
+              ))}
+            </ScrollView>
+          </>
+        )}
+
         <Column>
-          <SectionTitle title={filtering ? 'Stalls with matches' : 'All stalls'} right={!filtering ? <T v="label" color={C.ink3}>{STALLS.length} on campus</T> : undefined} />
+          <SectionTitle title={filtering ? 'Stalls with matches' : 'Saare stalls'} right={!filtering ? <T v="label" color={C.ink3}>{STALLS.length} on campus</T> : undefined} />
           <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 20 }}>
             {stalls.map((s, i) => (
               <Animated.View key={s.id} entering={enterRise(i, 160)}>

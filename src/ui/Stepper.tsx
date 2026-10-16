@@ -24,17 +24,17 @@ export function Stepper({ qty, onAdd, onRemove, disabled, disabledLabel = 'Sold 
     return (
       <Animated.View layout={MORPH}>
         <Press onPress={onAdd} disabled={disabled} feedback="add" accessibilityRole="button" accessibilityLabel="Add to cart"
-          style={[{ height: h, minWidth: compact ? 72 : 88, borderRadius: R.pill, backgroundColor: C.card, borderWidth: 1.5, borderColor: C.ink, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 4, paddingHorizontal: 14 }, SHADOW.card]}>
+          style={[{ height: h, minWidth: compact ? 72 : 88, borderRadius: R.pill, backgroundColor: C.canvas, borderWidth: 1.5, borderColor: C.accent, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 4, paddingHorizontal: 14 }, SHADOW.card]}>
           <Animated.View entering={SWAP_IN} exiting={SWAP_OUT} style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
-            <T v="bodyStrong" style={{ fontSize: 14 }}>{disabled ? disabledLabel : 'Add'}</T>
-            {!disabled && <Icon name="plus-bold" size={14} />}
+            <T v="bodyStrong" color={disabled ? C.ink3 : C.accent} style={{ fontSize: 14 }}>{disabled ? disabledLabel : 'Add'}</T>
+            {!disabled && <Icon name="plus-bold" size={14} color={C.accent} />}
           </Animated.View>
         </Press>
       </Animated.View>
     );
   }
   return (
-    <Animated.View layout={MORPH} style={{ height: h, minWidth: compact ? 92 : 104, borderRadius: R.pill, backgroundColor: C.ink, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+    <Animated.View layout={MORPH} style={{ height: h, minWidth: compact ? 92 : 104, borderRadius: R.pill, backgroundColor: C.accent, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
       <Press onPress={onRemove} feedback="remove" accessibilityLabel="Remove one" hitSlop={10} style={{ width: h, height: h, alignItems: 'center', justifyContent: 'center' }}>
         <Icon name="minus-bold" size={14} color={C.chalk} />
       </Press>
@@ -44,7 +44,7 @@ export function Stepper({ qty, onAdd, onRemove, disabled, disabledLabel = 'Sold 
         </Animated.View>
       </View>
       <Press onPress={onAdd} feedback="add" accessibilityLabel="Add one" hitSlop={10} style={{ width: h, height: h, alignItems: 'center', justifyContent: 'center' }}>
-        <Icon name="plus-bold" size={14} color={C.haldi} />
+        <Icon name="plus-bold" size={14} color={C.onAccent} />
       </Press>
     </Animated.View>
   );

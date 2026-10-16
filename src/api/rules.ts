@@ -1,4 +1,4 @@
-import type { OrderStatus, Role, StallLive } from './types';
+import type { Deal, OrderStatus, Role, StallLive } from './types';
 
 // Mirrors supabase/migrations: keep the two in step (tests/rules.test.ts covers this file).
 
@@ -48,6 +48,13 @@ export function freeSlotMinutes(avgPrepMin: number): number {
 export function lineTotal(lines: { qty: number; price: number }[]): number {
   return lines.reduce((sum, l) => sum + l.qty * l.price, 0);
 }
+
+/** A deal counts only while stock remains and the clock has not run out. */
+export function liveDeal(deal: Deal | undefined, now = Date.now()): Deal | undefined {
+  return deal && deal.left > 0 && deal.endsAt > now ? deal : undefined;
+}
+
+export const percentOff = (was: number, now: number) => Math.round((1 - now / was) * 100);
 
 export const MAX_ACTIVE_PER_USER = 3;
 export const MAX_QTY = 20;

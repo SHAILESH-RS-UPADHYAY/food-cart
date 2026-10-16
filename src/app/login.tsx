@@ -22,8 +22,8 @@ type Mode = 'phone' | 'student' | 'email';
 
 const MODES: { key: Mode; label: string }[] = [
   { key: 'phone', label: 'Phone' },
-  { key: 'student', label: 'Student email' },
-  { key: 'email', label: 'Personal email' },
+  { key: 'student', label: 'CU email' },
+  { key: 'email', label: 'Other email' },
 ];
 
 const validEmail = (e: string) => /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(e.trim());
@@ -62,30 +62,29 @@ export default function Login() {
   };
 
   return (
-    <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1, backgroundColor: C.night }}>
+    <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1, backgroundColor: C.canvas }}>
       <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={{ flexGrow: 1, paddingTop: insets.top + 24, paddingBottom: insets.bottom + 24, paddingHorizontal: 22, alignItems: 'center' }}>
         <View style={{ width: '100%', maxWidth: 440, flex: 1 }}>
           <Animated.View entering={enterRise(0)}>
-            <Lockup size={40} dark />
+            <Lockup size={40} />
           </Animated.View>
           <View style={{ flex: 1, justifyContent: 'center', paddingVertical: desktop ? 40 : 28, gap: 26 }}>
             <Animated.View entering={enterRise(1)}>
-              <T v="display" color={C.nightText}>Hungry? Let's get you in.</T>
-              <T v="body" color={C.nightMuted} style={{ marginTop: 10, fontSize: 16 }}>
-                {mode === 'phone' ? "We'll text you a 6-digit code." : "We'll email you a 6-digit code."}
+              <T v="display" color={C.ink}>Bas number daalo.</T>
+              <T v="body" color={C.ink3} style={{ marginTop: 10, fontSize: 16 }}>
+                {mode === 'phone' ? "We'll text a 6-digit code. No passwords to remember." : "We'll email a 6-digit code. No passwords to remember."}
               </T>
             </Animated.View>
 
             <Animated.View entering={enterRise(2)} style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
               {MODES.map((m) => (
-                <Pill key={m.key} label={m.label} dark active={mode === m.key} onPress={() => { setMode(m.key); setError(undefined); }} />
+                <Pill key={m.key} label={m.label} active={mode === m.key} onPress={() => { setMode(m.key); setError(undefined); }} />
               ))}
             </Animated.View>
 
             <Animated.View entering={enterRise(3)}>
               {mode === 'phone' ? (
                 <Field
-                  dark
                   label="Mobile number"
                   prefix="+91"
                   value={phone}
@@ -101,7 +100,6 @@ export default function Login() {
                 />
               ) : (
                 <Field
-                  dark
                   label={mode === 'student' ? 'CU student email' : 'Email'}
                   value={email}
                   onChangeText={(t) => { setEmail(t); setError(undefined); }}
@@ -119,17 +117,17 @@ export default function Login() {
             <Animated.View entering={enterRise(4)} style={{ gap: 14 }}>
               <Button label="Send code" iconRight="arrow-right-bold" onPress={submit} loading={busy} block />
               {api.mode === 'demo' && (
-                <View style={{ flexDirection: 'row', gap: 10, padding: 14, borderRadius: R.input, backgroundColor: C.night2 }}>
-                  <Icon name="info-bold" size={18} color={C.haldi} />
-                  <T v="small" color={C.nightMuted} style={{ flex: 1 }}>Demo build: any valid number or email works. The code is 123456.</T>
+                <View style={{ flexDirection: 'row', gap: 10, padding: 14, borderRadius: R.input, backgroundColor: C.card }}>
+                  <Icon name="info-bold" size={18} color={C.accent} />
+                  <T v="small" color={C.ink3} style={{ flex: 1 }}>Demo build: any valid number or email works. The code is 123456.</T>
                 </View>
               )}
             </Animated.View>
           </View>
 
           <Press onPress={() => router.push('/staff/login')} feedback="tap" style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, height: 48 }}>
-            <Icon name="storefront-bold" size={18} color={C.nightMuted} />
-            <T v="label" color={C.nightMuted}>Stall staff? Open the console</T>
+            <Icon name="storefront-bold" size={18} color={C.ink3} />
+            <T v="label" color={C.ink3}>Stall staff? Open the console</T>
           </Press>
         </View>
       </ScrollView>

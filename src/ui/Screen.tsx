@@ -16,7 +16,7 @@ export function Column({ children, style }: { children: ReactNode; style?: ViewS
   return <View style={[{ width: '100%', maxWidth: MAX_W, alignSelf: 'center', paddingHorizontal: desktop ? 32 : tablet ? 28 : 18 }, style]}>{children}</View>;
 }
 
-export function BackButton({ dark, onPhoto, fallback = '/home' }: { dark?: boolean; onPhoto?: boolean; fallback?: string }) {
+export function BackButton({ onPhoto, fallback = '/home' }: { onPhoto?: boolean; fallback?: string }) {
   return (
     <Press
       feedback="tap"
@@ -25,34 +25,34 @@ export function BackButton({ dark, onPhoto, fallback = '/home' }: { dark?: boole
       onPress={() => (router.canGoBack() ? router.back() : router.replace(fallback as never))}
       style={{
         width: 42, height: 42, borderRadius: 21, alignItems: 'center', justifyContent: 'center',
-        backgroundColor: onPhoto ? 'rgba(20,20,20,0.5)' : dark ? C.night2 : C.card,
-        borderWidth: onPhoto ? 0 : 1, borderColor: dark ? C.night3 : C.line,
+        backgroundColor: onPhoto ? 'rgba(20,20,20,0.5)' : C.card,
+        borderWidth: onPhoto ? 0 : 1, borderColor: C.line,
       }}
     >
-      <Icon name="arrow-left-bold" size={20} color={onPhoto || dark ? C.chalk : C.ink} />
+      <Icon name="arrow-left-bold" size={20} color={onPhoto ? C.chalk : C.ink} />
     </Press>
   );
 }
 
 /** Stack screen: safe top bar with back + title, scrolling body, optional pinned footer. */
-export function StackPage({ title, children, footer, right, dark, scroll = true, scrollProps }: {
-  title?: string; children: ReactNode; footer?: ReactNode; right?: ReactNode; dark?: boolean; scroll?: boolean; scrollProps?: ScrollViewProps;
+export function StackPage({ title, children, footer, right, scroll = true, scrollProps }: {
+  title?: string; children: ReactNode; footer?: ReactNode; right?: ReactNode; scroll?: boolean; scrollProps?: ScrollViewProps;
 }) {
   const insets = useSafeAreaInsets();
-  const bg = dark ? C.night : C.canvas;
+  const bg = C.canvas;
   const body = <Column style={{ paddingTop: 8, paddingBottom: footer ? 24 : insets.bottom + 32 }}>{children}</Column>;
   return (
     <View style={{ flex: 1, backgroundColor: bg }}>
       <View style={{ paddingTop: insets.top + 8, paddingBottom: 10, backgroundColor: bg }}>
         <Column style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
-          <BackButton dark={dark} />
-          <T v="h2" color={dark ? C.nightText : C.ink} style={{ flex: 1 }} numberOfLines={1}>{title}</T>
+          <BackButton />
+          <T v="h2" color={C.ink} style={{ flex: 1 }} numberOfLines={1}>{title}</T>
           {right}
         </Column>
       </View>
       {scroll ? <ScrollView keyboardShouldPersistTaps="handled" {...scrollProps}>{body}</ScrollView> : <View style={{ flex: 1 }}>{body}</View>}
       {footer && (
-        <View style={{ paddingBottom: insets.bottom + 12, paddingTop: 12, backgroundColor: bg, borderTopWidth: 1, borderTopColor: dark ? C.night3 : C.line }}>
+        <View style={{ paddingBottom: insets.bottom + 12, paddingTop: 12, backgroundColor: bg, borderTopWidth: 1, borderTopColor: C.line }}>
           <Column>{footer}</Column>
         </View>
       )}
@@ -60,10 +60,10 @@ export function StackPage({ title, children, footer, right, dark, scroll = true,
   );
 }
 
-export function SectionTitle({ title, right, dark }: { title: string; right?: ReactNode; dark?: boolean }) {
+export function SectionTitle({ title, right }: { title: string; right?: ReactNode }) {
   return (
     <View style={{ flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'space-between', marginTop: 30, marginBottom: 14 }}>
-      <T v="h2" color={dark ? C.nightText : C.ink}>{title}</T>
+      <T v="h2" color={C.ink}>{title}</T>
       {right}
     </View>
   );

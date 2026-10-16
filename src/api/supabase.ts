@@ -4,7 +4,7 @@ import { AppState, Platform } from 'react-native';
 
 import { LIVE } from './rules';
 import {
-  ApiError, type ApiErrorCode, type AuthTarget, type Backend, type Order, type StallLive, type User,
+  ApiError, type ApiErrorCode, type AuthTarget, type Backend, type Deal, type Order, type StallLive, type User,
 } from './types';
 
 // Live backend. Business rules run in Postgres (supabase/migrations); this file only maps rows.
@@ -17,7 +17,7 @@ if (Platform.OS !== 'web') {
   AppState.addEventListener('change', (s) => (s === 'active' ? sb.auth.startAutoRefresh() : sb.auth.stopAutoRefresh()));
 }
 
-const CODES: ApiErrorCode[] = ['STALL_AT_CAPACITY', 'STALL_CLOSED', 'ITEM_UNAVAILABLE', 'TOO_MANY_ACTIVE', 'BAD_TRANSITION', 'NOT_ALLOWED'];
+const CODES: ApiErrorCode[] = ['STALL_AT_CAPACITY', 'STALL_CLOSED', 'ITEM_UNAVAILABLE', 'TOO_MANY_ACTIVE', 'DEAL_GONE', 'BAD_TRANSITION', 'NOT_ALLOWED'];
 
 function fail(error: { message: string } | null): asserts error is null {
   if (!error) return;
@@ -176,6 +176,17 @@ export const live: Backend = {
     };
   },
 
+  subscribeDeals(cb) {
+    const refresh = () =>
+      sb.from('deals').select('item_id, stall_id, price, left_qty, ends_at').then(({ data }) =>
+        cb(Object.fromEntries((data ?? []).map((r): [string, Deal] => [r.item_id, { itemId: r.item_id, stallId: r.stall_id, price: r.price, left: r.left_qty, endsAt: Date.parse(r.ends_at) }]))));
+    refresh();
+    const ch = sb.channel(topic('deals')).on('postgres_changes', { event: '*', schema: 'public', table: 'deals' }, refresh).subscribe();
+    return () => {
+      sb.removeChannel(ch);
+    };
+  },
+
   subscribeMyOrders(cb) {
     let off = () => {};
     let cancelled = false;
@@ -224,5 +235,21 @@ export const live: Backend = {
   async setItemAvailable(itemId, available) {
     const { error } = await sb.rpc('set_item_available', { p_item: itemId, p_available: available });
     fail(error);
+  },
+
+  async setDeal(itemId, { price, left, minutes }) {
+    const { error } = await sb.rpc('set_deal', { p_item: itemId, p_price: price, p_left: left, p_minutes: minutes });
+    fail(error);
+  },
+
+  async clearDeal(itemId) {
+    const { error } = await sb.rpc('clear_deal', { p_item: itemId });
+    fail(error);
+  },
+
+  async deleteAccount() {
+    const { error } = await sb.rpc('delete_my_account');
+    fail(error);
+    await sb.auth.signOut();
   },
 };

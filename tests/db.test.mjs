@@ -117,3 +117,32 @@ test('RLS: students see only their orders, staff see their stall, nobody writes 
   await assert.rejects(as(db, STUDENT, `update profiles set role = 'admin' where id = '${STUDENT}'`), /permission denied/);
   await as(db, STUDENT, `update profiles set name = 'Simran K' where id = '${STUDENT}'`);
 });
+
+test('last call deals: server price, stock taken atomically, staff-only', async () => {
+  const db = await setup();
+  await assert.rejects(as(db, STUDENT, `select set_deal('hr-brownie', 39, 2, 60)`), /NOT_ALLOWED/);
+  await assert.rejects(as(db, STAFF, `select set_deal('hr-brownie', 70, 2, 60)`), /NOT_ALLOWED/); // not cheaper
+  await assert.rejects(as(db, STAFF, `select set_deal('lp-margherita', 99, 2, 60)`), /NOT_ALLOWED/); // other stall
+  await as(db, STAFF, `select set_deal('hr-brownie', 39, 2, 60)`);
+  const a = (await order(db, STUDENT, [{ item_id: 'hr-brownie', qty: 2 }, { item_id: 'hr-maggi', qty: 1 }])).rows[0];
+  assert.equal(a.total, 2 * 39 + 60);
+  assert.equal((await db.query(`select left_qty from deals where item_id = 'hr-brownie'`)).rows[0].left_qty, 0);
+  // stock gone: the next brownie is full price again
+  const b = (await order(db, OTHER, [{ item_id: 'hr-brownie', qty: 1 }])).rows[0];
+  assert.equal(b.total, 70);
+  await as(db, STAFF, `select set_deal('hr-brownie', 39, 1, 60)`);
+  await assert.rejects(order(db, OTHER, [{ item_id: 'hr-brownie', qty: 2 }]), /DEAL_GONE/);
+  await as(db, STAFF, `select clear_deal('hr-brownie')`);
+  assert.equal((await db.query(`select count(*)::int as n from deals`)).rows[0].n, 0);
+});
+
+test('delete account: person removed, stall keeps an anonymised order', async () => {
+  const db = await setup();
+  const o = (await order(db, STUDENT, [{ item_id: 'hr-maggi', qty: 1 }])).rows[0];
+  await as(db, STUDENT, `select delete_my_account()`);
+  assert.equal((await db.query(`select count(*)::int as n from auth.users where id = $1`, [STUDENT])).rows[0].n, 0);
+  assert.equal((await db.query(`select count(*)::int as n from profiles where id = $1`, [STUDENT])).rows[0].n, 0);
+  const kept = (await db.query(`select user_id, customer_name from orders where id = $1`, [o.id])).rows[0];
+  assert.deepEqual(kept, { user_id: null, customer_name: 'Deleted user' });
+  assert.equal((await as(db, STAFF, `select id from orders`)).rows.length, 1);
+});

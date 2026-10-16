@@ -10,7 +10,7 @@ import { LIVE } from '@/api/rules';
 import { fx } from '@/lib/feedback';
 import { rupees } from '@/lib/format';
 import { TAB_BAR_H, TOP_NAV_H, useLayout } from '@/lib/layout';
-import { cartSummary, useCart } from '@/store/cart';
+import { useCartSummary } from '@/store/cart';
 import { useSession } from '@/store/session';
 import { CartBar } from '@/ui/CartBar';
 import { Icon, type IconName } from '@/ui/Icon';
@@ -30,7 +30,7 @@ const TABS: { name: string; href: '/home' | '/orders' | '/likes' | '/me'; label:
 type ButtonProps = TabTriggerSlotProps & { tab: (typeof TABS)[number]; badge?: number; desktop?: boolean; ref?: Ref<View> };
 
 function TabButton({ tab, badge, desktop, isFocused, onPress, ...rest }: ButtonProps) {
-  const color = desktop ? (isFocused ? C.ink : C.ink3) : isFocused ? C.ink : C.nightMuted;
+  const color = desktop ? (isFocused ? C.ink : C.ink3) : isFocused ? C.onAccent : C.ink3;
   return (
     <Press
       {...(rest as object)}
@@ -78,10 +78,10 @@ function PhoneBar({ children, index }: { children?: ReactNode; index: number }) 
     <View style={{ position: 'absolute', left: 14, right: 14, bottom: insets.bottom + 10, alignItems: 'center' }} pointerEvents="box-none">
       <View
         onLayout={(e: LayoutChangeEvent) => setW(e.nativeEvent.layout.width - 12)}
-        style={[{ width: '100%', maxWidth: 520, height: TAB_BAR_H, borderRadius: TAB_BAR_H / 2, backgroundColor: C.ink, flexDirection: 'row', alignItems: 'center', paddingHorizontal: 6 }, SHADOW.float]}
+        style={[{ width: '100%', maxWidth: 520, height: TAB_BAR_H, borderRadius: TAB_BAR_H / 2, backgroundColor: C.canvas, borderWidth: 1, borderColor: C.line, flexDirection: 'row', alignItems: 'center', paddingHorizontal: 6 }, SHADOW.float]}
       >
         {slot > 0 && index >= 0 && (
-          <Animated.View style={[{ position: 'absolute', left: 6, top: 6, width: slot, height: TAB_BAR_H - 12, borderRadius: (TAB_BAR_H - 12) / 2, backgroundColor: C.haldi }, indicator]} />
+          <Animated.View style={[{ position: 'absolute', left: 6, top: 6, width: slot, height: TAB_BAR_H - 12, borderRadius: (TAB_BAR_H - 12) / 2, backgroundColor: C.accent }, indicator]} />
         )}
         {children}
       </View>
@@ -90,8 +90,7 @@ function PhoneBar({ children, index }: { children?: ReactNode; index: number }) 
 }
 
 function DesktopBar({ children }: { children?: ReactNode }) {
-  const qty = useCart((s) => s.qty);
-  const { count, total } = cartSummary(qty);
+  const { count, total } = useCartSummary();
   return (
     <View style={{ position: 'absolute', top: 0, left: 0, right: 0, height: TOP_NAV_H, backgroundColor: C.canvas, borderBottomWidth: 1, borderBottomColor: C.line, zIndex: 10 }}>
       <View style={{ flex: 1, width: '100%', maxWidth: MAX_W, alignSelf: 'center', paddingHorizontal: 32, flexDirection: 'row', alignItems: 'center', gap: 24 }}>
@@ -100,11 +99,11 @@ function DesktopBar({ children }: { children?: ReactNode }) {
         </Press>
         <View style={{ flex: 1, flexDirection: 'row', justifyContent: 'center', gap: 4 }}>{children}</View>
         <Press onPress={() => router.push('/cart')} feedback="open" accessibilityLabel="Cart"
-          style={{ flexDirection: 'row', alignItems: 'center', gap: 10, height: 44, paddingLeft: 8, paddingRight: 16, borderRadius: R.pill, backgroundColor: count ? C.haldi : C.card, borderWidth: count ? 0 : 1, borderColor: C.line }}>
-          <View style={{ width: 30, height: 30, borderRadius: 15, backgroundColor: C.ink, alignItems: 'center', justifyContent: 'center' }}>
-            {count ? <T v="label" color={C.haldi} tab>{count}</T> : <Icon name="shopping-bag-bold" size={15} color={C.chalk} />}
+          style={{ flexDirection: 'row', alignItems: 'center', gap: 10, height: 44, paddingLeft: 8, paddingRight: 16, borderRadius: R.pill, backgroundColor: count ? C.accent : C.card, borderWidth: count ? 0 : 1, borderColor: C.line }}>
+          <View style={{ width: 30, height: 30, borderRadius: 15, backgroundColor: count ? C.canvas : C.ink, alignItems: 'center', justifyContent: 'center' }}>
+            {count ? <T v="label" color={C.accent} tab>{count}</T> : <Icon name="shopping-bag-bold" size={15} color={C.chalk} />}
           </View>
-          <T v="bodyStrong" tab>{count ? rupees(total) : 'Cart'}</T>
+          <T v="bodyStrong" tab color={count ? C.onAccent : C.ink}>{count ? rupees(total) : 'Cart'}</T>
         </Press>
       </View>
     </View>

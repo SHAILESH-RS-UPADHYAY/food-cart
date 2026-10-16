@@ -50,7 +50,7 @@ export default function Likes() {
               <View style={{ width: 64, height: 64, borderRadius: 32, backgroundColor: C.chilliSoft, alignItems: 'center', justifyContent: 'center' }}>
                 <Icon name="heart-fill" size={30} color={C.chilli} />
               </View>
-              <T v="h2">Nothing here yet.</T>
+              <T v="h2">Abhi kuch nahi.</T>
               <T v="body" color={C.ink2}>Tap the heart on any {tab === 'items' ? 'dish' : 'stall'} and it lands here for one-tap reordering.</T>
               <Button label="Explore stalls" kind="dark" size="md" onPress={() => router.navigate('/home')} />
             </Animated.View>

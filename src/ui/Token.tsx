@@ -17,7 +17,7 @@ function Perforation({ bg }: { bg: string }) {
       <View style={{ position: 'absolute', left: -NOTCH / 2, width: NOTCH, height: NOTCH, borderRadius: NOTCH / 2, backgroundColor: bg }} />
       <View style={{ position: 'absolute', right: -NOTCH / 2, width: NOTCH, height: NOTCH, borderRadius: NOTCH / 2, backgroundColor: bg }} />
       <View style={{ marginHorizontal: NOTCH, flexDirection: 'row', justifyContent: 'space-between' }}>
-        {Array.from({ length: 18 }, (_, i) => <View key={i} style={{ width: 6, height: 2, borderRadius: 1, backgroundColor: C.line }} />)}
+        {Array.from({ length: 18 }, (_, i) => <View key={i} style={{ width: 6, height: 2, borderRadius: 1, backgroundColor: 'rgba(15,31,25,0.18)' }} />)}
       </View>
     </View>
   );
@@ -28,25 +28,27 @@ type Props = {
   tokenNo: number;
   code: string;
   qrValue: string;
-  /** e.g. "Ready", "Cooking" */
+  /** e.g. "Ready", "Collected" */
   stamp?: string;
-  stampTone?: 'leaf' | 'chilli';
+  stampTone?: 'stamp' | 'chilli';
+  /** token-slip paper colour (the stall's) */
+  paper?: string;
   footer?: React.ReactNode;
   bg?: string;
   style?: ViewStyle;
 };
 
 /** The paper token every CU stall hands out, made digital. The stamp slams in when it appears. */
-export function Token({ stall, tokenNo, code, qrValue, stamp, stampTone = 'leaf', footer, bg = C.canvas, style }: Props) {
-  const tone = stampTone === 'leaf' ? C.leaf : C.chilli;
+export function Token({ stall, tokenNo, code, qrValue, stamp, stampTone = 'stamp', paper = C.card, footer, bg = C.canvas, style }: Props) {
+  const tone = stampTone === 'stamp' ? C.accent : C.chilli;
   return (
-    <View style={[{ backgroundColor: C.card, borderRadius: R.token, overflow: 'hidden' }, SHADOW.card, style]}>
+    <View style={[{ backgroundColor: paper, borderRadius: R.token, overflow: 'hidden' }, SHADOW.card, style]}>
       <View style={{ padding: 22, paddingBottom: 14 }}>
-        <T v="label" color={C.ink3}>{stall.toUpperCase()}</T>
+        <T v="label" color={C.ink2}>{stall.toUpperCase()}</T>
         <View style={{ flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'space-between', marginTop: 2 }}>
           <View>
-            <T v="small" color={C.ink3}>Token</T>
-            <T v="brand" size={58} tab>{token(tokenNo)}</T>
+            <T v="small" color={C.ink2}>Token</T>
+            <T v="brand" size={58} color={C.accent} tab>{token(tokenNo)}</T>
           </View>
           {stamp && (
             <Animated.View
@@ -70,10 +72,10 @@ export function Token({ stall, tokenNo, code, qrValue, stamp, stampTone = 'leaf'
       <Perforation bg={bg} />
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 18, padding: 22, paddingTop: 14 }}>
         <View style={{ flex: 1 }}>
-          <T v="small" color={C.ink3}>Pickup code</T>
+          <T v="small" color={C.ink2}>Pickup code</T>
           <View style={{ flexDirection: 'row', gap: 6, marginTop: 6 }}>
             {code.split('').map((d, i) => (
-              <View key={i} style={{ width: 40, height: 50, borderRadius: 12, backgroundColor: C.canvas, alignItems: 'center', justifyContent: 'center' }}>
+              <View key={i} style={{ width: 40, height: 50, borderRadius: 12, backgroundColor: 'rgba(252,253,252,0.75)', alignItems: 'center', justifyContent: 'center' }}>
                 <T v="h1" tab>{d}</T>
               </View>
             ))}

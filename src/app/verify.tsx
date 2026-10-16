@@ -55,21 +55,20 @@ export default function Verify() {
   const to = target.kind === 'phone' ? `+91 ${prettyPhone(target.phone)}` : target.email;
 
   return (
-    <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1, backgroundColor: C.night }}>
+    <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1, backgroundColor: C.canvas }}>
       <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={{ flexGrow: 1, paddingTop: insets.top + 16, paddingBottom: insets.bottom + 24, paddingHorizontal: 22, alignItems: 'center' }}>
         <View style={{ width: '100%', maxWidth: 440, flex: 1 }}>
-          <BackButton dark fallback="/login" />
+          <BackButton fallback="/login" />
           <View style={{ flex: 1, justifyContent: 'center', gap: 28, paddingVertical: 28 }}>
             <Animated.View entering={enterRise(0)}>
-              <T v="display" color={C.nightText}>Enter the code</T>
-              <T v="body" color={C.nightMuted} style={{ marginTop: 10, fontSize: 16 }}>
-                Sent to <T v="bodyStrong" color={C.nightText}>{to}</T>
+              <T v="display" color={C.ink}>Code daalo.</T>
+              <T v="body" color={C.ink3} style={{ marginTop: 10, fontSize: 16 }}>
+                Sent to <T v="bodyStrong" color={C.ink}>{to}</T>
               </T>
             </Animated.View>
             <Animated.View entering={enterRise(1)}>
               <Animated.View key={shakes} style={shakes ? { animationName: SHAKE, animationDuration: '380ms', animationTimingFunction: CSS_EASE_OUT } : undefined}>
                 <OtpBoxes
-                  dark
                   value={code}
                   error={error}
                   onChange={(v) => {
@@ -80,15 +79,15 @@ export default function Verify() {
                   }}
                 />
               </Animated.View>
-              <T v="small" color={error ? C.chilli : C.nightMuted} style={{ marginTop: 12 }}>
-                {error ? "That code didn't match. Try again." : api.mode === 'demo' ? 'Demo code: 123456' : 'The code expires in 10 minutes.'}
+              <T v="small" color={error ? C.chilli : C.ink3} style={{ marginTop: 12 }}>
+                {error ? 'Code match nahi hua. Try again.' : api.mode === 'demo' ? 'Demo code: 123456' : 'The code expires in 10 minutes.'}
               </T>
             </Animated.View>
             <Animated.View entering={enterRise(2)} style={{ gap: 14 }}>
               <Button label="Verify" onPress={() => verify()} loading={busy} disabled={code.length < 6} block />
               <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
                 <Press onPress={() => router.back()} feedback="tap">
-                  <T v="label" color={C.nightMuted}>{target.kind === 'phone' ? 'Wrong number?' : 'Wrong email?'}</T>
+                  <T v="label" color={C.ink3}>{target.kind === 'phone' ? 'Wrong number?' : 'Wrong email?'}</T>
                 </Press>
                 <Press
                   disabled={wait > 0}
@@ -98,7 +97,7 @@ export default function Verify() {
                     await api.sendCode(target).catch(() => {});
                   }}
                 >
-                  <T v="label" color={wait > 0 ? C.nightMuted : C.haldi} tab>{wait > 0 ? `Resend in 0:${String(wait).padStart(2, '0')}` : 'Resend code'}</T>
+                  <T v="label" color={wait > 0 ? C.ink3 : C.accent} tab>{wait > 0 ? `Resend in 0:${String(wait).padStart(2, '0')}` : 'Resend code'}</T>
                 </Press>
               </View>
             </Animated.View>

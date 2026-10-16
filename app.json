@@ -7,7 +7,7 @@
     "icon": "./assets/brand/icon.png",
     "scheme": "foodcart",
     "userInterfaceStyle": "light",
-    "backgroundColor": "#141414",
+    "backgroundColor": "#FFFFFF",
     "ios": {
       "bundleIdentifier": "in.foodcart.app",
       "supportsTablet": true,
@@ -16,7 +16,7 @@
     "android": {
       "package": "in.foodcart.app",
       "adaptiveIcon": {
-        "backgroundColor": "#FFC21A",
+        "backgroundColor": "#2E4BFF",
         "foregroundImage": "./assets/brand/adaptive-foreground.png",
         "backgroundImage": "./assets/brand/adaptive-background.png",
         "monochromeImage": "./assets/brand/adaptive-monochrome.png"
@@ -28,8 +28,8 @@
       "favicon": "./assets/brand/favicon.png",
       "name": "Food Cart",
       "shortName": "Food Cart",
-      "themeColor": "#141414",
-      "backgroundColor": "#141414",
+      "themeColor": "#FFFFFF",
+      "backgroundColor": "#FFFFFF",
       "description": "Order ahead from every stall at Chandigarh University. Skip the lunch queue."
     },
     "plugins": [
@@ -39,7 +39,7 @@
       [
         "expo-splash-screen",
         {
-          "backgroundColor": "#141414",
+          "backgroundColor": "#FFFFFF",
           "image": "./assets/brand/splash.png",
           "imageWidth": 220
         }

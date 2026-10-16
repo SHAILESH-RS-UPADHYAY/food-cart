@@ -9,7 +9,7 @@ import { C, R } from './theme';
 type Kind = 'primary' | 'dark' | 'light' | 'ghost' | 'quiet' | 'danger';
 
 const KIND: Record<Kind, { bg: string; fg: string; border?: string }> = {
-  primary: { bg: C.haldi, fg: C.ink },
+  primary: { bg: C.accent, fg: C.onAccent },
   dark: { bg: C.ink, fg: C.chalk },
   light: { bg: C.card, fg: C.ink, border: C.line },
   ghost: { bg: 'transparent', fg: C.ink, border: C.ink },

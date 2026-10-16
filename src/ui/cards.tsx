@@ -3,11 +3,11 @@ import { router } from 'expo-router';
 import { useState } from 'react';
 import { View } from 'react-native';
 
-import type { StallLive } from '@/api';
-import { etaMinutes, freeSlotMinutes, stallState } from '@/api/rules';
+import { useDeals, type Deal, type StallLive } from '@/api';
+import { etaMinutes, freeSlotMinutes, liveDeal, percentOff, stallState } from '@/api/rules';
 import { stallById, type Item, type Stall } from '@/data/catalog';
 import { fx } from '@/lib/feedback';
-import { rupees } from '@/lib/format';
+import { clock, rupees } from '@/lib/format';
 import { useCart } from '@/store/cart';
 
 import { CapacityMeter, StatusChip, TagChip, VegMark } from './bits';
@@ -17,12 +17,13 @@ import { Photo } from './Photo';
 import { Press } from './Press';
 import { Stepper } from './Stepper';
 import { T } from './Text';
+import { toast } from './Toast';
 import { C, R, SHADOW } from './theme';
 
 export const FULL_LINES = [
-  (n: number) => `Kitchen's at full masala. Back in about ${n} min.`,
-  () => 'A hundred orders deep. Chef has entered beast mode.',
-  (n: number) => `Tawa's packed. Give it ${n} min and try again.`,
+  (n: number) => `Kitchen full hai. ${n} min ruk jao, phir try karo.`,
+  () => 'Sau orders pe chef. Thoda saans lene do.',
+  (n: number) => `Tawa pe jagah nahi. ${n} min mein khaali hoga.`,
 ];
 export const fullLine = (stall: Stall) => FULL_LINES[stall.id.length % FULL_LINES.length](freeSlotMinutes(stall.avgPrepMin));
 
@@ -82,9 +83,15 @@ export function ItemRow({ item, unavailable, blocked, showStall, onConflict }: {
   item: Item; unavailable?: boolean; blocked?: boolean; showStall?: boolean; onConflict: (itemId: string) => void;
 }) {
   const qty = useCart((s) => s.qty[item.id] ?? 0);
+  const deal = liveDeal(useDeals()[item.id]);
   const [delta, setDelta] = useState<1 | -1>(1);
   const add = () => {
     setDelta(1);
+    if (deal && qty >= deal.left) {
+      fx.error();
+      toast(`Sirf ${deal.left} bache hain at the last-call price`, 'hourglass-high-bold');
+      return;
+    }
     if (!useCart.getState().add(item.id)) {
       fx.error();
       onConflict(item.id);
@@ -99,7 +106,15 @@ export function ItemRow({ item, unavailable, blocked, showStall, onConflict }: {
         </View>
         <T v="h3" numberOfLines={2} color={unavailable ? C.ink3 : C.ink}>{item.name}</T>
         {showStall && <T v="small" color={C.ink3}>{stallById[item.stallId].name}</T>}
-        <T v="price" tab color={unavailable ? C.ink3 : C.ink}>{rupees(item.price)}</T>
+        {deal ? (
+          <View style={{ flexDirection: 'row', alignItems: 'baseline', gap: 8, flexWrap: 'wrap' }}>
+            <T v="price" tab color={C.accent}>{rupees(deal.price)}</T>
+            <T v="small" tab color={C.ink4} style={{ textDecorationLine: 'line-through' }}>{rupees(item.price)}</T>
+            <T v="label" color={C.masala}>{deal.left} left</T>
+          </View>
+        ) : (
+          <T v="price" tab color={unavailable ? C.ink3 : C.ink}>{rupees(item.price)}</T>
+        )}
         <T v="small" color={C.ink3} numberOfLines={2}>{item.description}</T>
       </View>
       <View style={{ width: 118, alignItems: 'center' }}>
@@ -117,6 +132,50 @@ export function ItemRow({ item, unavailable, blocked, showStall, onConflict }: {
             onRemove={() => { setDelta(-1); useCart.getState().remove(item.id); }}
             compact
           />
+        </View>
+      </View>
+    </View>
+  );
+}
+
+/** Last-call card: a leftover dish at a lower price, limited plates, ends soon. */
+export function DealCard({ item, deal, width = 208, blocked, onConflict }: { item: Item; deal: Deal; width?: number; blocked?: boolean; onConflict: (itemId: string) => void }) {
+  const qty = useCart((s) => s.qty[item.id] ?? 0);
+  const [delta, setDelta] = useState<1 | -1>(1);
+  const h = Math.round(width * 0.66);
+  const add = () => {
+    setDelta(1);
+    if (qty >= deal.left) {
+      fx.error();
+      toast(`Sirf ${deal.left} bache hain`, 'hourglass-high-bold');
+      return;
+    }
+    if (!useCart.getState().add(item.id)) {
+      fx.error();
+      onConflict(item.id);
+    }
+  };
+  return (
+    <View style={{ width, borderRadius: R.card, backgroundColor: C.card, overflow: 'hidden' }}>
+      <Press onPress={() => router.push(`/stall/${item.stallId}`)} feedback="open" scale={0.985} accessibilityLabel={`${item.name}, last call deal`}>
+        <Photo photo={item.photo} width={width} style={{ width, height: h }} alt={item.name} />
+        <View style={{ position: 'absolute', top: 10, left: 10, paddingHorizontal: 10, height: 26, borderRadius: R.pill, backgroundColor: C.accent, justifyContent: 'center' }}>
+          <T v="label" color={C.onAccent} tab>{percentOff(item.price, deal.price)}% off</T>
+        </View>
+      </Press>
+      <View style={{ padding: 12, gap: 4 }}>
+        <T v="h3" numberOfLines={1}>{item.name}</T>
+        <T v="small" color={C.ink3} numberOfLines={1}>{stallById[item.stallId].name}</T>
+        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 6 }}>
+          <View>
+            <View style={{ flexDirection: 'row', alignItems: 'baseline', gap: 6 }}>
+              <T v="h2" tab color={C.accent}>{rupees(deal.price)}</T>
+              <T v="small" tab color={C.ink4} style={{ textDecorationLine: 'line-through' }}>{rupees(item.price)}</T>
+            </View>
+            <T v="label" color={C.masala} tab>{deal.left} left, till {clock(deal.endsAt)}</T>
+          </View>
+          <Stepper qty={qty} compact lastDelta={delta} disabled={blocked && qty === 0} disabledLabel="Full" onAdd={add}
+            onRemove={() => { setDelta(-1); useCart.getState().remove(item.id); }} />
         </View>
       </View>
     </View>

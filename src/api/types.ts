@@ -41,6 +41,9 @@ export type Order = {
   collectedAt?: number;
 };
 
+/** A stall's leftover / surplus offer on one dish: cheaper, limited, time-boxed. */
+export type Deal = { itemId: string; stallId: string; price: number; left: number; endsAt: number };
+
 export type PlaceOrderInput = {
   stallId: string;
   lines: { itemId: string; qty: number }[];
@@ -50,7 +53,7 @@ export type PlaceOrderInput = {
 
 /** Errors the backend raises with a stable code the UI can explain. */
 export type ApiErrorCode =
-  | 'STALL_AT_CAPACITY' | 'STALL_CLOSED' | 'ITEM_UNAVAILABLE' | 'TOO_MANY_ACTIVE'
+  | 'STALL_AT_CAPACITY' | 'STALL_CLOSED' | 'ITEM_UNAVAILABLE' | 'TOO_MANY_ACTIVE' | 'DEAL_GONE'
   | 'BAD_TRANSITION' | 'NOT_ALLOWED' | 'BAD_CODE' | 'NETWORK';
 
 export class ApiError extends Error {
@@ -74,9 +77,14 @@ export interface Backend {
   subscribeUnavailable(cb: (itemIds: Set<string>) => void): Unsubscribe;
   subscribeMyOrders(cb: (orders: Order[]) => void): Unsubscribe;
   subscribeStallOrders(stallId: string, cb: (orders: Order[]) => void): Unsubscribe;
+  subscribeDeals(cb: (deals: Record<string, Deal>) => void): Unsubscribe;
 
   placeOrder(input: PlaceOrderInput): Promise<Order>;
   setOrderStatus(orderId: string, status: OrderStatus): Promise<void>;
   updateStall(stallId: string, patch: { status?: StallStatus; maxActive?: number }): Promise<void>;
   setItemAvailable(itemId: string, available: boolean): Promise<void>;
+  setDeal(itemId: string, deal: { price: number; left: number; minutes: number }): Promise<void>;
+  clearDeal(itemId: string): Promise<void>;
+  /** Removes the account; past orders stay with the stall, anonymised. */
+  deleteAccount(): Promise<void>;
 }

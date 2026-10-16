@@ -1,3 +1,4 @@
+import { AnekLatin_600SemiBold, AnekLatin_700Bold, AnekLatin_800ExtraBold } from '@expo-google-fonts/anek-latin';
 import { Shrikhand_400Regular } from '@expo-google-fonts/shrikhand';
 import {
   SchibstedGrotesk_400Regular, SchibstedGrotesk_500Medium, SchibstedGrotesk_700Bold,
@@ -19,6 +20,8 @@ import { token } from '@/lib/format';
 import { initSound } from '@/lib/sound';
 import { useNotify } from '@/store/notify';
 import { useSession } from '@/store/session';
+import { useSettings } from '@/store/settings';
+import { CookieConsent } from '@/ui/CookieConsent';
 import { ToastHost, toast } from '@/ui/Toast';
 import { C } from '@/ui/theme';
 
@@ -40,7 +43,7 @@ function LiveSync() {
         useNotify.getState().drop(id);
         if (st === 'open' || st === 'busy') {
           fx.pill();
-          toast(`${stallById[id].name} has room again. Order now.`, 'bell-ringing-bold', 'leaf');
+          toast(`${stallById[id].name} mein jagah ho gayi. Order now!`, 'bell-ringing-bold', 'leaf');
         }
       }
     }
@@ -57,11 +60,11 @@ function LiveSync() {
       if (!was || was === o.status) continue;
       const watching = path === `/order/${o.id}`;
       const stall = stallById[o.stallId]?.name ?? 'The stall';
-      if (o.status === 'ready' && !watching) {
+      if (o.status === 'ready' && !watching && useSettings.getState().alerts) {
         fx.ready();
-        toast(`${token(o.tokenNo)} is ready at ${stall}`, 'bell-ringing-bold', 'leaf');
+        toast(`${token(o.tokenNo)} ready hai at ${stall}. Counter pe jao!`, 'bell-ringing-bold', 'leaf');
       } else if (o.status === 'accepted' && !watching) {
-        toast(`${stall} accepted ${token(o.tokenNo)}`, 'chef-hat-bold');
+        toast(`${stall} ne ${token(o.tokenNo)} accept kar liya`, 'chef-hat-bold');
       } else if (o.status === 'rejected') {
         fx.error();
         toast(`${stall} couldn't take ${token(o.tokenNo)}`, 'warning-bold', 'chilli');
@@ -74,6 +77,9 @@ function LiveSync() {
 export default function RootLayout() {
   const [fontsLoaded] = useFonts({
     Shrikhand_400Regular,
+    AnekLatin_600SemiBold,
+    AnekLatin_700Bold,
+    AnekLatin_800ExtraBold,
     SchibstedGrotesk_400Regular,
     SchibstedGrotesk_500Medium,
     SchibstedGrotesk_700Bold,
@@ -106,10 +112,10 @@ export default function RootLayout() {
         }}
       >
         <Stack.Screen name="index" options={{ animation: 'none' }} />
-        <Stack.Screen name="onboarding" options={{ animation: 'fade', contentStyle: { backgroundColor: C.night } }} />
-        <Stack.Screen name="login" options={{ animation: 'fade', contentStyle: { backgroundColor: C.night } }} />
-        <Stack.Screen name="verify" options={{ contentStyle: { backgroundColor: C.night } }} />
-        <Stack.Screen name="welcome" options={{ animation: 'fade', contentStyle: { backgroundColor: C.night } }} />
+        <Stack.Screen name="onboarding" options={{ animation: 'fade', contentStyle: { backgroundColor: C.canvas } }} />
+        <Stack.Screen name="login" options={{ animation: 'fade', contentStyle: { backgroundColor: C.canvas } }} />
+        <Stack.Screen name="verify" options={{ contentStyle: { backgroundColor: C.canvas } }} />
+        <Stack.Screen name="welcome" options={{ animation: 'fade', contentStyle: { backgroundColor: C.canvas } }} />
         <Stack.Screen name="(tabs)" options={{ animation: 'fade' }} />
         <Stack.Screen name="stall/[id]" options={{ animation: reduced ? 'fade' : 'slide_from_right', animationMatchesGesture: true }} />
         <Stack.Screen name="cart" options={{ animation: reduced ? 'fade' : 'slide_from_bottom' }} />
@@ -117,8 +123,12 @@ export default function RootLayout() {
         <Stack.Screen name="order/[id]" options={{ animation: 'fade' }} />
         <Stack.Screen name="staff" options={{ animation: 'fade' }} />
         <Stack.Screen name="admin" options={{ animation: 'fade' }} />
+        <Stack.Screen name="help" />
+        <Stack.Screen name="legal" />
+        <Stack.Screen name="credits" />
       </Stack>
       <ToastHost />
+      <CookieConsent />
     </GestureHandlerRootView>
   );
 }

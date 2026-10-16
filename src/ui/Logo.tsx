@@ -21,10 +21,10 @@ function Wheel({ color }: { color: string }) {
 }
 
 /** The static mark. */
-export function CartMark({ size = 40, awning = C.ink, stripe, cart = C.ink }: Colors & { size?: number }) {
+export function CartMark({ size = 40, awning = C.accent, stripe = C.accentSoft, cart = C.ink }: Colors & { size?: number }) {
   return (
     <Svg width={size} height={size} viewBox={VIEWBOX} accessibilityLabel="Food Cart">
-      {TABS.map((d, i) => <Path key={i} d={d} fill={i % 2 ? stripe ?? awning : awning} />)}
+      {TABS.map((d, i) => <Path key={i} d={d} fill={i % 2 ? stripe : awning} />)}
       {POLES.map((d) => <Path key={d} d={d} fill={cart} />)}
       <Path d={BODY} fill={cart} fillRule="evenodd" />
       <Path d={HANDLE} stroke={cart} strokeWidth={6} strokeLinecap="round" />
@@ -37,11 +37,11 @@ export function Wordmark({ size = 26, color = C.ink }: { size?: number; color?: 
   return <T v="brand" size={size} color={color} style={{ includeFontPadding: false }}>food cart</T>;
 }
 
-export function Lockup({ size = 34, dark }: { size?: number; dark?: boolean }) {
+export function Lockup({ size = 34 }: { size?: number }) {
   return (
     <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-      <CartMark size={size} awning={dark ? C.haldi : C.ink} stripe={dark ? C.chalk : C.ink} cart={dark ? C.chalk : C.ink} />
-      <Wordmark size={size * 0.62} color={dark ? C.chalk : C.ink} />
+      <CartMark size={size} />
+      <Wordmark size={size * 0.62} />
     </View>
   );
 }
@@ -70,28 +70,28 @@ export function AnimatedLogo({ size = 200, delay = 0, tagline }: { size?: number
         <Animated.View
           style={{
             position: 'absolute', left: size * 0.06, top: size * 0.06, width: size * 0.88, height: size * 0.88, borderRadius: size,
-            backgroundColor: C.night2, opacity: 0, animationFillMode: 'forwards',
+            backgroundColor: C.card, opacity: 0, animationFillMode: 'forwards',
             animationName: { from: { opacity: 0, transform: [{ scale: 0.86 }] }, to: { opacity: 1, transform: [{ scale: 1 }] } },
             animationDuration: '520ms', animationDelay: delay, animationTimingFunction: CSS_EASE_OUT,
           }}
         />
         {TABS.map((d, i) => (
           <View key={i} style={{ position: 'absolute', inset: 0 }}>
-            {layer(<Path d={d} fill={i % 2 ? C.chalk : C.haldi} />, {
+            {layer(<Path d={d} fill={i % 2 ? C.accentSoft : C.accent} />, {
               animationName: { '0%': { opacity: 0, transform: [{ translateY: -26 * k }] }, '55%': { opacity: 1, transform: [{ translateY: 3 * k }] }, '100%': { opacity: 1, transform: [{ translateY: 0 }] } },
               animationDuration: '420ms', animationDelay: delay + i * 90, animationTimingFunction: CSS_EASE_OUT,
             })}
           </View>
         ))}
-        {layer(<>{POLES.map((d) => <Path key={d} d={d} fill={C.chalk} />)}</>, {
+        {layer(<>{POLES.map((d) => <Path key={d} d={d} fill={C.ink} />)}</>, {
           animationName: { from: { opacity: 0, transform: [{ translateY: 12 * k }] }, to: { opacity: 1, transform: [{ translateY: 0 }] } },
           animationDuration: '300ms', animationDelay: delay + 330, animationTimingFunction: CSS_EASE_OUT,
         })}
-        {layer(<Path d={BODY} fill={C.chalk} fillRule="evenodd" />, {
+        {layer(<Path d={BODY} fill={C.ink} fillRule="evenodd" />, {
           animationName: { '0%': { opacity: 0, transform: [{ translateY: 20 * k }] }, '60%': { opacity: 1, transform: [{ translateY: -2.5 * k }] }, '100%': { opacity: 1, transform: [{ translateY: 0 }] } },
           animationDuration: '420ms', animationDelay: delay + 360, animationTimingFunction: CSS_EASE_OUT,
         })}
-        {layer(<Path d={HANDLE} stroke={C.chalk} strokeWidth={6} strokeLinecap="round" />, {
+        {layer(<Path d={HANDLE} stroke={C.ink} strokeWidth={6} strokeLinecap="round" />, {
           animationName: { from: { opacity: 0, transform: [{ translateX: -6 * k }, { rotate: '-8deg' }] }, to: { opacity: 1, transform: [{ translateX: 0 }, { rotate: '0deg' }] } },
           animationDuration: '280ms', animationDelay: delay + 640, animationTimingFunction: BOUNCE,
         })}
@@ -109,7 +109,7 @@ export function AnimatedLogo({ size = 200, delay = 0, tagline }: { size?: number
               animationDuration: '620ms', animationDelay: delay + 380 + i * 60, animationTimingFunction: CSS_EASE_OUT, animationFillMode: 'forwards',
             }}
           >
-            <Svg width={24 * k} height={24 * k} viewBox="-12 -12 24 24"><Wheel color={C.chalk} /></Svg>
+            <Svg width={24 * k} height={24 * k} viewBox="-12 -12 24 24"><Wheel color={C.ink} /></Svg>
           </Animated.View>
         ))}
       </View>
@@ -123,7 +123,7 @@ export function AnimatedLogo({ size = 200, delay = 0, tagline }: { size?: number
               animationDuration: '420ms', animationDelay: delay + 820 + i * 38, animationTimingFunction: BOUNCE,
             }}
           >
-            {ch === ' ' ? <View style={{ width: size * 0.06 }} /> : <T v="brand" size={size * 0.25} color={C.chalk}>{ch}</T>}
+            {ch === ' ' ? <View style={{ width: size * 0.06 }} /> : <T v="brand" size={size * 0.25} color={C.ink}>{ch}</T>}
           </Animated.View>
         ))}
       </View>
@@ -135,7 +135,7 @@ export function AnimatedLogo({ size = 200, delay = 0, tagline }: { size?: number
             animationDuration: '400ms', animationDelay: delay + 1250, animationTimingFunction: CSS_EASE_OUT,
           }}
         >
-          <T v="h3" color={C.nightMuted} center>{tagline}</T>
+          <T v="h3" color={C.ink3} center>{tagline}</T>
         </Animated.View>
       )}
     </View>

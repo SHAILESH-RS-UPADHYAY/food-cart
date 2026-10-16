@@ -44,6 +44,7 @@ export const fx = {
   success: cue('success', 'success'),
   ready: cue('ready', 'success'),
   stamp: cue('stamp', 'medium'),
+  crunch: cue('crunch', 'light'),
   coin: cue('coin', 'success'),
   alert: cue('alert', 'medium'),
   intro: cue('intro', null),

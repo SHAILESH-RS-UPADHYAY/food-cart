@@ -4,9 +4,9 @@ import { Platform } from 'react-native';
 import { STALLS, itemById, itemsOf, stallById } from '@/data/catalog';
 import { useSettings } from '@/store/settings';
 
-import { KITCHEN, MAX_ACTIVE_PER_USER, MAX_QTY, canTransition, etaMinutes, lineTotal } from './rules';
+import { KITCHEN, MAX_ACTIVE_PER_USER, MAX_QTY, canTransition, etaMinutes, lineTotal, liveDeal } from './rules';
 import {
-  ApiError, type AuthTarget, type Backend, type Order, type OrderStatus, type PlaceOrderInput,
+  ApiError, type AuthTarget, type Backend, type Deal, type Order, type OrderStatus, type PlaceOrderInput,
   type StallLive, type StallStatus, type User,
 } from './types';
 
@@ -25,6 +25,7 @@ type DB = {
   session: string | null;
   stalls: Record<string, { status: StallStatus; maxActive: number }>;
   unavailable: string[];
+  deals: Record<string, Omit<Deal, 'itemId' | 'stallId'>>;
   orders: Order[];
   seq: Record<string, number>;
   seeded: string[];
@@ -35,6 +36,14 @@ type DB = {
 };
 
 const KEY = 'fc-demo-db-v1';
+
+/** Leftover / surplus offers the stalls start the day with: [item, price, left, minutes to go]. */
+const DEAL_SEED: [string, number, number, number][] = [
+  ['bnc-cheesecake', 89, 3, 150], ['hr-brownie', 39, 5, 95], ['cc-waffle', 89, 2, 120], ['fr-thali', 69, 6, 80],
+  ['cf-steam-momos', 49, 4, 110], ['lp-cheese', 149, 2, 200], ['tj-mango', 59, 3, 140],
+];
+const seedDeals = () =>
+  Object.fromEntries(DEAL_SEED.map(([id, price, left, mins]) => [id, { price, left, endsAt: Date.now() + mins * 60000 }]));
 export const DEMO_CODE = '123456';
 
 const fresh = (): DB => ({
@@ -42,6 +51,7 @@ const fresh = (): DB => ({
   session: null,
   stalls: Object.fromEntries(STALLS.map((s) => [s.id, { status: 'open' as StallStatus, maxActive: s.maxActive }])),
   unavailable: ['hr-hazelnut', 'lp-garden'],
+  deals: seedDeals(),
   orders: [],
   seq: {},
   seeded: [],
@@ -89,7 +99,7 @@ function merge(inc: DB) {
     }
   }
   db.orders = [...byId.values()];
-  for (const k of ['stalls', 'unavailable'] as const) {
+  for (const k of ['stalls', 'unavailable', 'deals'] as const) {
     if ((inc.rev[k] ?? 0) > (db.rev[k] ?? 0)) {
       (db as Record<string, unknown>)[k] = inc[k];
       db.rev[k] = inc.rev[k];
@@ -172,9 +182,9 @@ function nextToken(stallId: string) {
   return db.seq[stallId];
 }
 
-function makeOrder(stallId: string, userId: string, customerName: string, lines: { itemId: string; qty: number }[],
+function makeOrder(stallId: string, userId: string, customerName: string, lines: { itemId: string; qty: number; price?: number }[],
   payment: Order['payment'], note?: string, createdAt = Date.now()): Order {
-  const full = lines.map(({ itemId, qty }) => ({ itemId, qty, name: itemById[itemId].name, price: itemById[itemId].price }));
+  const full = lines.map(({ itemId, qty, price }) => ({ itemId, qty, name: itemById[itemId].name, price: price ?? itemById[itemId].price }));
   return {
     id: uid(),
     stallId,
@@ -352,6 +362,11 @@ export const demo: Backend = {
     return subscribe(() => cb(new Set(db.unavailable)));
   },
 
+  subscribeDeals(cb) {
+    return subscribe(() =>
+      cb(Object.fromEntries(Object.entries(db.deals).map(([itemId, d]) => [itemId, { ...d, itemId, stallId: itemById[itemId].stallId }]))));
+  },
+
   subscribeMyOrders(cb) {
     return subscribe(() => {
       const self = me();
@@ -388,7 +403,19 @@ export const demo: Backend = {
       return !item || item.stallId !== input.stallId || db.unavailable.includes(l.itemId) || l.qty > MAX_QTY;
     });
     if (!lines.length || bad) throw new ApiError('ITEM_UNAVAILABLE');
-    const order = makeOrder(input.stallId, self.id, self.name || 'Student', lines, input.payment, input.note);
+    // Leftover deals: priced here, never by the client, and stock is taken in the same step.
+    const priced = lines.map((l) => {
+      const d = db.deals[l.itemId];
+      const deal = d && liveDeal({ ...d, itemId: l.itemId, stallId: input.stallId });
+      if (deal && deal.left < l.qty) throw new ApiError('DEAL_GONE');
+      return { ...l, price: deal ? deal.price : itemById[l.itemId].price };
+    });
+    for (const l of priced) {
+      const d = db.deals[l.itemId];
+      if (d && liveDeal({ ...d, itemId: l.itemId, stallId: input.stallId })) db.deals = { ...db.deals, [l.itemId]: { ...d, left: d.left - l.qty } };
+    }
+    touch('deals');
+    const order = makeOrder(input.stallId, self.id, self.name || 'Student', priced, input.payment, input.note);
     addOrder(order);
     commit();
     return { ...order };
@@ -418,6 +445,32 @@ export const demo: Backend = {
   async setItemAvailable(itemId, available) {
     db.unavailable = available ? db.unavailable.filter((i) => i !== itemId) : [...new Set([...db.unavailable, itemId])];
     touch('unavailable');
+    commit();
+  },
+
+  async setDeal(itemId, { price, left, minutes }) {
+    const item = itemById[itemId];
+    if (!item || price <= 0 || price >= item.price || left < 1) throw new ApiError('NOT_ALLOWED', 'A deal must be cheaper than the menu price.');
+    db.deals = { ...db.deals, [itemId]: { price: Math.round(price), left: Math.round(left), endsAt: Date.now() + minutes * 60000 } };
+    touch('deals');
+    commit();
+  },
+
+  async clearDeal(itemId) {
+    const { [itemId]: _gone, ...rest } = db.deals;
+    db.deals = rest;
+    touch('deals');
+    commit();
+  },
+
+  async deleteAccount() {
+    const self = me();
+    if (!self) return;
+    // the stall keeps its sales history, without the person
+    for (const o of db.orders) if (o.userId === self.id) o.customerName = 'Deleted user';
+    const { [self.id]: _removed, ...users } = db.users;
+    db.users = users;
+    setSession(null);
     commit();
   },
 };

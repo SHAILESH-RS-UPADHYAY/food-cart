@@ -14,6 +14,7 @@ export const SOUND_FILES = {
   success: require('@/assets/sounds/success.wav'),
   ready: require('@/assets/sounds/ready.wav'),
   stamp: require('@/assets/sounds/stamp.wav'),
+  crunch: require('@/assets/sounds/crunch.wav'),
   coin: require('@/assets/sounds/coin.wav'),
   alert: require('@/assets/sounds/alert.wav'),
   intro: require('@/assets/sounds/intro.wav'),

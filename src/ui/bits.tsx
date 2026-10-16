@@ -35,7 +35,7 @@ export const stateColor = (s: StallState) => STATE[s].fg;
 export function StatusChip({ state, pulse, onDark }: { state: StallState; pulse?: boolean; onDark?: boolean }) {
   const s = STATE[state];
   return (
-    <View style={{ alignSelf: 'flex-start', flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 10, height: 26, borderRadius: R.pill, backgroundColor: onDark ? 'rgba(20,20,20,0.72)' : s.bg }}>
+    <View style={{ alignSelf: 'flex-start', flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 10, height: 26, borderRadius: R.pill, backgroundColor: onDark ? 'rgba(21,22,28,0.62)' : s.bg }}>
       <View style={{ width: 8, height: 8 }}>
         {pulse && (
           <Animated.View
@@ -76,7 +76,7 @@ export function CapacityMeter({ active, max, state, style }: { active: number; m
 }
 
 const TAG: Record<Tag, { label: string; icon: IconName; fg: string; bg: string }> = {
-  bestseller: { label: 'Bestseller', icon: 'star-fill', fg: C.ink, bg: C.haldiSoft },
+  bestseller: { label: 'Bestseller', icon: 'star-fill', fg: C.accent, bg: C.accentTint },
   spicy: { label: 'Spicy', icon: 'fire-fill', fg: C.chilli, bg: C.chilliSoft },
   new: { label: 'New', icon: 'sparkle-fill', fg: C.leaf, bg: C.leafSoft },
 };
