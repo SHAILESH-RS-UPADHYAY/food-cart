@@ -46,6 +46,18 @@ The demo never depends on network or credentials; adding env vars switches to re
 reference sounds are copyrighted; only their character was studied). Web plays through Web Audio
 (zero latency), native through pooled expo-audio players.
 
+**ADR-9 Live menu registry.** Staff add dishes and set prices (`saveItem`, SQL `upsert_menu_item`).
+The patch is applied in place to `ITEMS` / `itemById` in `src/data/catalog.ts`, so cart pricing,
+search and the demo kitchen all read one registry; screens re-render on `useMenuVersion()`.
+Printed-menu dishes can be repriced; dishes a stall added are fully editable.
+
+**ADR-10 Team access, one account per stall.** The account decides the stall, never the URL or the
+client. Live: Supabase Auth + `stall_staff` + `is_staff_of()` in every function and RLS policy.
+Demo: `DEMO_TEAM` accounts (docs/DEMO_LOGINS.md), a 5-miss / 30 s lockout, and the same
+`is_staff_of` rule on every demo write and read. Wrong-stall and non-HQ visits render `NoAccess`.
+A console heartbeat in the shared demo DB keeps the autopilot off stalls with a live console,
+so the staff member is the one who accepts.
+
 ## 3. Data model
 - `profiles(id, name, phone, email, role)` - row created by trigger on sign-up; users may update `name` only.
 - `stalls(id, name, ..., avg_prep_min, max_active_orders, active_orders, status)`
