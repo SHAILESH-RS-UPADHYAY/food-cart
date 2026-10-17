@@ -11,8 +11,8 @@ import { T } from '@/ui/Text';
 import { C, R } from '@/ui/theme';
 
 const FAQ = [
-  { q: 'How does pickup work?', a: 'Order from the app, wait for "Counter pe ready hai", then walk up and show your 4-digit code or QR at the counter. No queue to order, no queue to collect.' },
-  { q: 'What does "Kitchen full" mean?', a: 'Each stall caps how many orders it cooks at once, so food stays hot and fast. At the cap, ordering pauses for a few minutes. Tap "Jagah hote hi batana" and we ping you when there is room.' },
+  { q: 'How does pickup work?', a: 'Order from the app, wait for "Ready at the counter", then walk up and show your 4-digit code or QR at the counter. No queue to order, no queue to collect.' },
+  { q: 'What does "Kitchen full" mean?', a: 'Each stall caps how many orders it cooks at once, so food stays hot and fast. At the cap, ordering pauses for a few minutes. Tap "Notify me when there’s room" and we ping you as soon as a slot opens.' },
   { q: 'What are Last call deals?', a: "Fresh food the stall made extra today, at a lower price. Plates are limited and the deal ends at the time shown. It's the same food, cheaper, and less of it goes to waste." },
   { q: 'Can I cancel an order?', a: 'Yes, until the stall accepts it. After that the kitchen has started, so talk to the counter.' },
   { q: 'How do I pay?', a: 'Pay at the counter with cash or any UPI app when you collect. Online UPI and card payments are coming soon.' },

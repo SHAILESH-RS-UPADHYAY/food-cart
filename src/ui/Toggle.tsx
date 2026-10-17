@@ -6,7 +6,7 @@ import { CSS_EASE_OUT } from './motion';
 import { Press } from './Press';
 import { C } from './theme';
 
-/** A switch in the brand: ultramarine track when on. State change is a 180 ms transition. */
+/** A switch in the brand: accent track when on. State change is a 180 ms transition. */
 export function Toggle({ value, onChange, label }: { value: boolean; onChange: (v: boolean) => void; label: string }) {
   return (
     <Press

@@ -14,6 +14,7 @@ import { CSS_EASE_OUT, enterRise } from '@/ui/motion';
 import { Press } from '@/ui/Press';
 import { BackButton } from '@/ui/Screen';
 import { T } from '@/ui/Text';
+import { PaperGrid } from '@/ui/Surface';
 import { C } from '@/ui/theme';
 
 const SHAKE = { '0%': { transform: [{ translateX: 0 }] }, '20%': { transform: [{ translateX: -10 }] }, '40%': { transform: [{ translateX: 9 }] }, '60%': { transform: [{ translateX: -6 }] }, '80%': { transform: [{ translateX: 4 }] }, '100%': { transform: [{ translateX: 0 }] } };
@@ -56,12 +57,13 @@ export default function Verify() {
 
   return (
     <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1, backgroundColor: C.canvas }}>
+      <PaperGrid />
       <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={{ flexGrow: 1, paddingTop: insets.top + 16, paddingBottom: insets.bottom + 24, paddingHorizontal: 22, alignItems: 'center' }}>
         <View style={{ width: '100%', maxWidth: 440, flex: 1 }}>
           <BackButton fallback="/login" />
           <View style={{ flex: 1, justifyContent: 'center', gap: 28, paddingVertical: 28 }}>
             <Animated.View entering={enterRise(0)}>
-              <T v="display" color={C.ink}>Code daalo.</T>
+              <T v="display" color={C.ink}>Enter your *code.*</T>
               <T v="body" color={C.ink3} style={{ marginTop: 10, fontSize: 16 }}>
                 Sent to <T v="bodyStrong" color={C.ink}>{to}</T>
               </T>
@@ -80,7 +82,7 @@ export default function Verify() {
                 />
               </Animated.View>
               <T v="small" color={error ? C.chilli : C.ink3} style={{ marginTop: 12 }}>
-                {error ? 'Code match nahi hua. Try again.' : api.mode === 'demo' ? 'Demo code: 123456' : 'The code expires in 10 minutes.'}
+                {error ? "That code doesn't match. Try again." : api.mode === 'demo' ? 'Demo code: 123456' : 'The code expires in 10 minutes.'}
               </T>
             </Animated.View>
             <Animated.View entering={enterRise(2)} style={{ gap: 14 }}>

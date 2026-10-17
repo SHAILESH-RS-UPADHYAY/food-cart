@@ -38,6 +38,9 @@ export function initSound() {
   window.addEventListener('keydown', unlock, { capture: true });
 }
 
+/** False until the browser lets this page play audio (first tap or key press). */
+export const soundUnlocked = () => ctx?.state === 'running';
+
 export function playSound(name: SoundName, volume = 1) {
   if (!ctx || ctx.state !== 'running') return;
   const buffer = buffers.get(name);

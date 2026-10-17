@@ -2,6 +2,8 @@
 export const SOUND_FILES = {
   tap: require('@/assets/sounds/tap.wav'),
   pill: require('@/assets/sounds/pill.wav'),
+  /** staff console: an online order arrived (loaded early so the first one is never silent) */
+  order: require('@/assets/sounds/order.wav'),
   tick: require('@/assets/sounds/tick.wav'),
   add: require('@/assets/sounds/add.wav'),
   remove: require('@/assets/sounds/remove.wav'),

@@ -144,3 +144,23 @@ export const CATEGORIES: { name: Category; photo: PhotoKey }[] = [
 export const stallById = Object.fromEntries(STALLS.map((s) => [s.id, s])) as Record<string, Stall>;
 export const itemById = Object.fromEntries(ITEMS.map((i) => [i.id, i])) as Record<string, Item>;
 export const itemsOf = (stallId: string) => ITEMS.filter((i) => i.stallId === stallId);
+
+/** Staff edits on top of the base menu: new dishes and changed prices. */
+export type MenuPatch = { prices: Record<string, number>; added: Item[] };
+
+const BASE = ITEMS.map((i) => ({ ...i }));
+
+/** Dishes from the printed menu: staff can reprice them; dishes a stall added are fully editable. */
+export const isBaseItem = (id: string) => BASE.some((i) => i.id === id);
+
+/**
+ * The live menu is this same registry, patched in place, so every reader (cart pricing,
+ * search, the demo kitchen) sees staff edits without threading a menu through the app.
+ */
+export function applyMenu(patch: MenuPatch) {
+  const next = [...BASE.map((i) => (patch.prices[i.id] ? { ...i, price: patch.prices[i.id] } : { ...i })), ...patch.added];
+  ITEMS.length = 0;
+  ITEMS.push(...next);
+  for (const k of Object.keys(itemById)) delete itemById[k];
+  for (const i of next) itemById[i.id] = i;
+}

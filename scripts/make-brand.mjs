@@ -6,11 +6,11 @@ import { Resvg } from '@resvg/resvg-js';
 
 import { markSvg } from '../src/ui/logo-geometry.ts';
 
-const INK = '#15161C';
-const ACCENT = '#2E4BFF';
-const SOFT = '#C9D2FF';
+const INK = '#111111';
+const ACCENT = '#111111';
+const SOFT = '#BDBDB7';
 const WHITE = '#FFFFFF';
-const SHRIKHAND = 'node_modules/@expo-google-fonts/shrikhand/400Regular/Shrikhand_400Regular.ttf';
+const SHRIKHAND = 'node_modules/@expo-google-fonts/inter/600SemiBold/Inter_600SemiBold.ttf';
 const OUT = 'assets/brand';
 mkdirSync(OUT, { recursive: true });
 
@@ -32,5 +32,5 @@ png('favicon', markSvg({ awning: WHITE, stripe: SOFT, cart: WHITE, bg: ACCENT, p
 const mark = markSvg({ awning: ACCENT, stripe: SOFT, cart: INK, size: 600 }).replace(/^<svg[^>]*>/, '').replace('</svg>', '');
 png('splash', `<svg xmlns="http://www.w3.org/2000/svg" width="600" height="760" viewBox="0 0 600 760">
   <svg x="0" y="0" width="600" height="600" viewBox="4 6 120 120">${mark}</svg>
-  <text x="300" y="712" text-anchor="middle" font-family="Shrikhand" font-size="118" fill="${INK}">food cart</text>
+  <text x="300" y="712" text-anchor="middle" font-family="Inter" font-weight="600" font-size="104" letter-spacing="-4" fill="${INK}">Food Cart</text>
 </svg>`, 600);

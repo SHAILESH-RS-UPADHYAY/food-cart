@@ -32,13 +32,13 @@ const STEPS: { status: OrderStatus; label: string; icon: IconName }[] = [
 const RANK: Record<OrderStatus, number> = { placed: 0, accepted: 1, preparing: 2, ready: 3, collected: 4, cancelled: -1, rejected: -1 };
 
 const COPY: Record<OrderStatus, { head: string; sub: string }> = {
-  placed: { head: 'Kitchen tak pahunch gaya', sub: 'Waiting for the stall to accept.' },
-  accepted: { head: 'Chef ne haan bol diya', sub: 'Your order is next on the line.' },
-  preparing: { head: 'Tawa garam hai', sub: "It's cooking. Walk over when we buzz you." },
-  ready: { head: 'Counter pe ready hai', sub: 'Show your code and grab it.' },
-  collected: { head: 'Enjoy karo!', sub: 'Thanks for skipping the queue.' },
-  cancelled: { head: 'Order cancel ho gaya', sub: 'Nothing was charged.' },
-  rejected: { head: 'Stall ye order nahi le paaya', sub: 'Usually an item ran out. Try another dish or stall.' },
+  placed: { head: 'Sent to *the kitchen.*', sub: 'Waiting for the stall to accept.' },
+  accepted: { head: 'The chef *said yes.*', sub: 'Your order is next on the line.' },
+  preparing: { head: 'Your food is *cooking.*', sub: "It's cooking. Walk over when we buzz you." },
+  ready: { head: 'Ready at *the counter.*', sub: 'Show your code and grab it.' },
+  collected: { head: '*Enjoy your meal!*', sub: 'Thanks for skipping the queue.' },
+  cancelled: { head: 'Order cancelled', sub: 'Nothing was charged.' },
+  rejected: { head: "The stall couldn't take this order", sub: 'Usually an item ran out. Try another dish or stall.' },
 };
 
 /** Seconds until ready: demo kitchens are compressed, live ones use the stall's ETA. */
@@ -72,7 +72,7 @@ function Celebration({ order, onDone }: { order: Order; onDone: () => void }) {
           <Icon name="check-bold" size={52} color={C.accent} />
         </Animated.View>
         <Animated.View style={{ alignItems: 'center', marginTop: 26, opacity: 0, animationName: { from: { opacity: 0, transform: [{ translateY: 18 }] }, to: { opacity: 1, transform: [{ translateY: 0 }] } }, animationDuration: '460ms', animationDelay: 220, animationFillMode: 'forwards', animationTimingFunction: CSS_EASE_OUT }}>
-          <T v="brand" size={46} color={C.chalk} center>Ho gaya order!</T>
+          <T v="brand" size={46} color={C.chalk} center>Order placed!</T>
           <T v="h3" color="rgba(255,255,255,0.82)" center style={{ marginTop: 6 }}>
             Token {token(order.tokenNo)} at {stallById[order.stallId].name}
           </T>

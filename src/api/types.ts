@@ -1,3 +1,6 @@
+import type { Category, MenuPatch } from '@/data/catalog';
+import type { PhotoKey } from '@/data/images';
+
 export type Role = 'student' | 'staff' | 'admin';
 
 export type User = {
@@ -69,7 +72,8 @@ export interface Backend {
   restore(): Promise<User | null>;
   sendCode(target: AuthTarget): Promise<void>;
   verifyCode(target: AuthTarget, code: string): Promise<User>;
-  staffSignIn(credentials: { email: string; password: string } | { demoStallId: string } | { demoAdmin: true }): Promise<User>;
+  /** Team login. Each account runs exactly one stall (or is HQ); the account decides, never the client. */
+  staffSignIn(credentials: { email: string; password: string }): Promise<User>;
   setName(name: string): Promise<User>;
   signOut(): Promise<void>;
 
@@ -78,6 +82,12 @@ export interface Backend {
   subscribeMyOrders(cb: (orders: Order[]) => void): Unsubscribe;
   subscribeStallOrders(stallId: string, cb: (orders: Order[]) => void): Unsubscribe;
   subscribeDeals(cb: (deals: Record<string, Deal>) => void): Unsubscribe;
+  /** Staff edits to the menu (new dishes, price changes). */
+  subscribeMenu(cb: (patch: MenuPatch) => void): Unsubscribe;
+  /** Admin: every order on campus (live + today). */
+  subscribeAllOrders(cb: (orders: Order[]) => void): Unsubscribe;
+  /** Admin: everyone with an account. */
+  listUsers(): Promise<User[]>;
 
   placeOrder(input: PlaceOrderInput): Promise<Order>;
   setOrderStatus(orderId: string, status: OrderStatus): Promise<void>;
@@ -85,6 +95,8 @@ export interface Backend {
   setItemAvailable(itemId: string, available: boolean): Promise<void>;
   setDeal(itemId: string, deal: { price: number; left: number; minutes: number }): Promise<void>;
   clearDeal(itemId: string): Promise<void>;
+  /** Staff: add a dish (no id) or change a dish's price and details. */
+  saveItem(item: { id?: string; stallId: string; name: string; description: string; category: Category; price: number; photo: PhotoKey }): Promise<void>;
   /** Removes the account; past orders stay with the stall, anonymised. */
   deleteAccount(): Promise<void>;
 }

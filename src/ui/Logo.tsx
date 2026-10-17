@@ -33,15 +33,21 @@ export function CartMark({ size = 40, awning = C.accent, stripe = C.accentSoft, 
   );
 }
 
-export function Wordmark({ size = 26, color = C.ink }: { size?: number; color?: string }) {
-  return <T v="brand" size={size} color={color} style={{ includeFontPadding: false }}>food cart</T>;
+export function Wordmark({ size = 22, color = C.ink }: { size?: number; color?: string }) {
+  return <T v="h1" size={size} color={color} style={{ letterSpacing: -0.04 * size, includeFontPadding: false }}>Food Cart</T>;
 }
 
-export function Lockup({ size = 34 }: { size?: number }) {
+/** Mark, name, and the italic-serif tagline under it (the reference's lockup). */
+export function Lockup({ size = 34, tagline = true }: { size?: number; tagline?: boolean }) {
   return (
-    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-      <CartMark size={size} />
-      <Wordmark size={size * 0.62} />
+    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+      <View style={{ width: size + 8, height: size + 8, borderRadius: 10, backgroundColor: C.ink, alignItems: 'center', justifyContent: 'center' }}>
+        <CartMark size={size - 2} awning={C.chalk} stripe={C.ink4} cart={C.chalk} />
+      </View>
+      <View>
+        <Wordmark size={size * 0.56} />
+        {tagline && <T v="brand" size={size * 0.42} color={C.ink3} style={{ marginTop: -2 }}>Order ahead, skip the line</T>}
+      </View>
     </View>
   );
 }
@@ -49,7 +55,7 @@ export function Lockup({ size = 34 }: { size?: number }) {
 // ---------- animated build (onboarding + splash hand-off) ----------
 
 const BOUNCE = cubicBezier(0.34, 1.56, 0.64, 1);
-const LETTERS = 'food cart'.split('');
+const LETTERS = 'Food Cart'.split('');
 
 /**
  * The cart assembles itself in time with the sonic logo (assets/sounds/intro.wav):
@@ -123,7 +129,7 @@ export function AnimatedLogo({ size = 200, delay = 0, tagline }: { size?: number
               animationDuration: '420ms', animationDelay: delay + 820 + i * 38, animationTimingFunction: BOUNCE,
             }}
           >
-            {ch === ' ' ? <View style={{ width: size * 0.06 }} /> : <T v="brand" size={size * 0.25} color={C.ink}>{ch}</T>}
+            {ch === ' ' ? <View style={{ width: size * 0.05 }} /> : <T v="display" size={size * 0.22} color={C.ink} style={{ letterSpacing: -1 }}>{ch}</T>}
           </Animated.View>
         ))}
       </View>

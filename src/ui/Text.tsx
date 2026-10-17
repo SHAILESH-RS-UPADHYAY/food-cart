@@ -13,15 +13,24 @@ export type TProps = TextProps & {
   size?: number;
 };
 
-export function T({ v = 'body', color = C.ink, center, tab, size, style, ...rest }: TProps) {
-  const base: TextStyle = v === 'brand' ? { fontFamily: F.brand, fontSize: 30, lineHeight: 40 } : TYPE[v];
+export function T({ v = 'body', color = C.ink, center, tab, size, style, children, ...rest }: TProps) {
+  const base: TextStyle = v === 'brand' ? { fontFamily: F.serif, fontSize: 30, lineHeight: 36, letterSpacing: -0.3 } : TYPE[v];
+  const fs = size ?? base.fontSize ?? 15;
+  // "*phrase*" inside a string is set in italic serif: the reference's one-word emphasis.
+  const content = typeof children === 'string' && children.includes('*')
+    ? children.split(/(\*[^*]+\*)/).map((part, i) =>
+      part.startsWith('*') && part.endsWith('*') && part.length > 2
+        ? <Text key={i} style={{ fontFamily: F.serif, fontSize: fs * 1.12, letterSpacing: -0.2, color: color === C.ink ? C.ink3 : undefined }}>{part.slice(1, -1)}</Text>
+        : part)
+    : children;
   return (
     <Text
       {...rest}
+      children={content}
       style={[
         base,
         { color },
-        size ? { fontSize: size, lineHeight: Math.round(size * (v === 'brand' ? 1.3 : 1.12)) } : null,
+        size ? { fontSize: size, lineHeight: Math.round(size * (v === 'brand' ? 1.18 : 1.12)) } : null,
         center && { textAlign: 'center' },
         tab && { fontVariant: ['tabular-nums'] },
         style,

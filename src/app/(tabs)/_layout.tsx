@@ -15,6 +15,7 @@ import { useSession } from '@/store/session';
 import { CartBar } from '@/ui/CartBar';
 import { Icon, type IconName } from '@/ui/Icon';
 import { Lockup } from '@/ui/Logo';
+import { Glass } from '@/ui/Surface';
 import { EASE_IN_OUT } from '@/ui/motion';
 import { Press } from '@/ui/Press';
 import { T } from '@/ui/Text';
@@ -78,12 +79,15 @@ function PhoneBar({ children, index }: { children?: ReactNode; index: number }) 
     <View style={{ position: 'absolute', left: 14, right: 14, bottom: insets.bottom + 10, alignItems: 'center' }} pointerEvents="box-none">
       <View
         onLayout={(e: LayoutChangeEvent) => setW(e.nativeEvent.layout.width - 12)}
-        style={[{ width: '100%', maxWidth: 520, height: TAB_BAR_H, borderRadius: TAB_BAR_H / 2, backgroundColor: C.canvas, borderWidth: 1, borderColor: C.line, flexDirection: 'row', alignItems: 'center', paddingHorizontal: 6 }, SHADOW.float]}
+        style={[{ width: '100%', maxWidth: 520, height: TAB_BAR_H, borderRadius: TAB_BAR_H / 2 }, SHADOW.float]}
       >
+        <Glass radius={TAB_BAR_H / 2} style={{ position: 'absolute', inset: 0 } as never} />
+        <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center', paddingHorizontal: 6 }}>
         {slot > 0 && index >= 0 && (
           <Animated.View style={[{ position: 'absolute', left: 6, top: 6, width: slot, height: TAB_BAR_H - 12, borderRadius: (TAB_BAR_H - 12) / 2, backgroundColor: C.accent }, indicator]} />
         )}
         {children}
+        </View>
       </View>
     </View>
   );
@@ -92,7 +96,7 @@ function PhoneBar({ children, index }: { children?: ReactNode; index: number }) 
 function DesktopBar({ children }: { children?: ReactNode }) {
   const { count, total } = useCartSummary();
   return (
-    <View style={{ position: 'absolute', top: 0, left: 0, right: 0, height: TOP_NAV_H, backgroundColor: C.canvas, borderBottomWidth: 1, borderBottomColor: C.line, zIndex: 10 }}>
+    <Glass style={{ position: 'absolute', top: 0, left: 0, right: 0, height: TOP_NAV_H, zIndex: 10 }}>
       <View style={{ flex: 1, width: '100%', maxWidth: MAX_W, alignSelf: 'center', paddingHorizontal: 32, flexDirection: 'row', alignItems: 'center', gap: 24 }}>
         <Press onPress={() => router.navigate('/home')} feedback="none" accessibilityLabel="Food Cart home">
           <Lockup size={34} />
@@ -106,7 +110,7 @@ function DesktopBar({ children }: { children?: ReactNode }) {
           <T v="bodyStrong" tab color={count ? C.onAccent : C.ink}>{count ? rupees(total) : 'Cart'}</T>
         </Press>
       </View>
-    </View>
+    </Glass>
   );
 }
 

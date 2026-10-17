@@ -47,6 +47,7 @@ export const fx = {
   crunch: cue('crunch', 'light'),
   coin: cue('coin', 'success'),
   alert: cue('alert', 'medium'),
+  order: cue('order', 'success'),
   intro: cue('intro', null),
   detent: cue('tick', 'light', 0.7),
 };

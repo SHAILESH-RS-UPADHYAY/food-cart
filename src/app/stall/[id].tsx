@@ -8,7 +8,7 @@ import Animated, {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { scheduleOnRN } from 'react-native-worklets';
 
-import { useDeals, useStalls, useUnavailable } from '@/api';
+import { useDeals, useMenuVersion, useStalls, useUnavailable } from '@/api';
 import { etaMinutes, freeSlotMinutes, liveDeal, stallState } from '@/api/rules';
 import { itemsOf, stallById, type Category } from '@/data/catalog';
 import { fx } from '@/lib/feedback';
@@ -39,6 +39,7 @@ export default function StallScreen() {
   const live = useStalls()[id];
   const unavailable = useUnavailable();
   const deals = useDeals();
+  const menuV = useMenuVersion();
   const insets = useSafeAreaInsets();
   const { width, desktop, tablet } = useLayout();
   const cartStall = useCart((s) => s.stallId);
@@ -51,7 +52,7 @@ export default function StallScreen() {
   const offsets = useSharedValue<number[]>([]);
   const y = useSharedValue(0);
 
-  const items = useMemo(() => (stall ? itemsOf(stall.id) : []), [stall]);
+  const items = useMemo(() => (stall ? itemsOf(stall.id) : []), [stall, menuV]);
   const sections = useMemo(() => {
     const map = new Map<Category, typeof items>();
     for (const it of items) map.set(it.category, [...(map.get(it.category) ?? []), it]);
@@ -147,7 +148,7 @@ export default function StallScreen() {
                   <View style={{ gap: 12 }}>
                     <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
                       <Icon name="fire-fill" size={22} color={C.chilli} />
-                      <T v="h3" color={C.chilli}>Kitchen full hai</T>
+                      <T v="h3" color={C.chilli}>Kitchen is full</T>
                     </View>
                     <T v="h2">{fullLine(stall)}</T>
                     <T v="body" color={C.ink2}>
@@ -155,14 +156,14 @@ export default function StallScreen() {
                     </T>
                     <CapacityMeter active={live?.active ?? 0} max={live?.maxActive ?? 1} state={state} />
                     <Button
-                      label={watching ? 'Bata denge, pakka' : 'Jagah hote hi batana'}
+                      label={watching ? "We'll ping you" : "Notify me when there’s room"}
                       icon="bell-ringing-bold"
                       kind={watching ? 'light' : 'dark'}
                       size="md"
                       disabled={watching}
                       onPress={() => {
                         useNotify.getState().watch(stall.id);
-                        toast(`${stall.name} mein jagah hote hi batayenge`, 'bell-ringing-bold');
+                        toast(`We'll ping you when ${stall.name} has room`, 'bell-ringing-bold');
                       }}
                     />
                   </View>
@@ -170,22 +171,22 @@ export default function StallScreen() {
                   <View style={{ gap: 12 }}>
                     <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'baseline' }}>
                       <T v="h3">Kitchen load</T>
-                      <T v="small" color={C.ink3} tab>{live?.active ?? 0}/{live?.maxActive ?? stall.maxActive} orders on the tawa</T>
+                      <T v="small" color={C.ink3} tab>{live?.active ?? 0}/{live?.maxActive ?? stall.maxActive} orders cooking</T>
                     </View>
                     <CapacityMeter active={live?.active ?? 0} max={live?.maxActive ?? stall.maxActive} state={state} />
                     <T v="small" color={C.ink3}>
-                      {state === 'busy' ? 'Bheed badh rahi hai. Order now to lock your slot.' : state === 'paused' ? 'Stall ne thodi der ke liye orders roke hain.' : 'Kitchen mein jagah hai. Order away.'}
+                      {state === 'busy' ? "It's getting busy. Order now to lock your slot." : state === 'paused' ? 'The stall has paused orders for a few minutes.' : 'Plenty of room in the kitchen. Order away.'}
                     </T>
                   </View>
                 )}
               </Animated.View>
 
               {stallDeals.length > 0 && (
-                <Animated.View entering={enterRise(3)} style={{ marginTop: 18, paddingHorizontal: 16, borderRadius: R.card, backgroundColor: C.accentTint }}>
+                <Animated.View entering={enterRise(3)} style={{ marginTop: 18, paddingHorizontal: 16, borderRadius: R.card, backgroundColor: C.saffronSoft }}>
                   <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, paddingTop: 16 }}>
-                    <Icon name="hourglass-high-bold" size={18} color={C.accent} />
-                    <T v="h3" color={C.accent}>Last call</T>
-                    <T v="small" color={C.ink2} style={{ flex: 1 }} numberOfLines={1}>Bacha hua, par fresh. Limited plates.</T>
+                    <Icon name="hourglass-high-bold" size={18} color={C.masala} />
+                    <T v="h3" color={C.masala}>Last call</T>
+                    <T v="small" color={C.ink2} style={{ flex: 1 }} numberOfLines={1}>Today's extras, still fresh. Limited plates.</T>
                   </View>
                   {stallDeals.map((it, i) => (
                     <View key={it.id}>

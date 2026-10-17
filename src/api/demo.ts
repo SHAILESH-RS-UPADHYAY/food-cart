@@ -1,7 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Platform } from 'react-native';
 
-import { STALLS, itemById, itemsOf, stallById } from '@/data/catalog';
+import { STALLS, applyMenu, isBaseItem, itemById, itemsOf, stallById, type MenuPatch } from '@/data/catalog';
 import { useSettings } from '@/store/settings';
 
 import { KITCHEN, MAX_ACTIVE_PER_USER, MAX_QTY, canTransition, etaMinutes, lineTotal, liveDeal } from './rules';
@@ -26,6 +26,9 @@ type DB = {
   stalls: Record<string, { status: StallStatus; maxActive: number }>;
   unavailable: string[];
   deals: Record<string, Omit<Deal, 'itemId' | 'stallId'>>;
+  menu: MenuPatch;
+  /** stallId -> last heartbeat of an open staff console in any tab: autopilot leaves those stalls to humans */
+  consoles: Record<string, number>;
   orders: Order[];
   seq: Record<string, number>;
   seeded: string[];
@@ -46,12 +49,37 @@ const seedDeals = () =>
   Object.fromEntries(DEAL_SEED.map(([id, price, left, mins]) => [id, { price, left, endsAt: Date.now() + mins * 60000 }]));
 export const DEMO_CODE = '123456';
 
+/**
+ * Team logins: one per stall, plus HQ. Same shape as live Supabase staff accounts, so the demo
+ * shows real separation (docs/DEMO_LOGINS.md).
+ */
+export const DEMO_TEAM: { email: string; password: string; stallId?: string }[] = [
+  { email: 'hrcafe@foodcart.test', password: 'HRcafe#4821', stallId: 'hr-cafe' },
+  { email: 'creativefood@foodcart.test', password: 'Creative#7316', stallId: 'creative-food' },
+  { email: 'booksncooks@foodcart.test', password: 'Books#5194', stallId: 'books-n-cooks' },
+  { email: 'tj@foodcart.test', password: 'TJstall#2648', stallId: 'tj' },
+  { email: 'lapinoz@foodcart.test', password: 'Lapinoz#9073', stallId: 'lapinoz' },
+  { email: 'cornercafe@foodcart.test', password: 'Corner#3517', stallId: 'corner-cafe' },
+  { email: 'foodrepublic@foodcart.test', password: 'Republic#6402', stallId: 'food-republic' },
+  { email: 'hq@foodcart.test', password: 'FoodCartHQ#2026' },
+];
+
+const teamUser = (a: (typeof DEMO_TEAM)[number]): User =>
+  a.stallId
+    ? { id: `staff-${a.stallId}`, name: `${stallById[a.stallId].name} team`, role: 'staff', stallId: a.stallId, email: a.email }
+    : { id: 'demo-admin', name: 'Food Cart HQ', role: 'admin', email: a.email };
+
+/** Wrong passwords per email: the fifth miss locks that login for 30 s. */
+const misses: Record<string, { n: number; until: number }> = {};
+
 const fresh = (): DB => ({
   users: {},
   session: null,
   stalls: Object.fromEntries(STALLS.map((s) => [s.id, { status: 'open' as StallStatus, maxActive: s.maxActive }])),
   unavailable: ['hr-hazelnut', 'lp-garden'],
   deals: seedDeals(),
+  menu: { prices: {}, added: [] },
+  consoles: {},
   orders: [],
   seq: {},
   seeded: [],
@@ -99,18 +127,20 @@ function merge(inc: DB) {
     }
   }
   db.orders = [...byId.values()];
-  for (const k of ['stalls', 'unavailable', 'deals'] as const) {
+  for (const k of ['stalls', 'unavailable', 'deals', 'menu'] as const) {
     if ((inc.rev[k] ?? 0) > (db.rev[k] ?? 0)) {
       (db as Record<string, unknown>)[k] = inc[k];
       db.rev[k] = inc.rev[k];
     }
   }
   for (const [k, v] of Object.entries(inc.seq)) db.seq[k] = Math.max(db.seq[k] ?? 0, v);
+  for (const [k, v] of Object.entries(inc.consoles ?? {})) db.consoles[k] = Math.max(db.consoles[k] ?? 0, v);
   db.seeded = [...new Set([...db.seeded, ...inc.seeded])];
 }
 
 channel?.addEventListener('message', (e: MessageEvent<DB>) => {
   merge(e.data);
+  applyMenu(db.menu);
   listeners.forEach((l) => l());
 });
 
@@ -121,6 +151,7 @@ function load() {
     })
     .catch(() => {})
     .then(() => {
+      applyMenu(db.menu);
       let s = db.session;
       if (web) {
         try {
@@ -143,6 +174,17 @@ function commit() {
 const uid = () => Math.random().toString(36).slice(2, 10) + Date.now().toString(36).slice(-4);
 const wait = (ms: number) => new Promise((r) => setTimeout(r, ms));
 const me = () => (session ? db.users[session] ?? null : null);
+
+/** Same rule as SQL is_staff_of(): HQ, or staff of exactly this stall. */
+const runs = (stallId?: string) => {
+  const u = me();
+  return !!u && !!stallId && (u.role === 'admin' || (u.role === 'staff' && u.stallId === stallId));
+};
+const mustRun = (stallId?: string) => {
+  if (!runs(stallId)) throw new ApiError('NOT_ALLOWED', 'That belongs to another stall. You can only change your own.');
+};
+const isHq = () => me()?.role === 'admin';
+const LIVE_CONSOLE_MS = 12000;
 
 // ---------- live stall state ----------
 
@@ -226,7 +268,8 @@ function seedBoard(stallId: string) {
   if (db.seeded.includes(stallId)) return;
   db.seeded.push(stallId);
   const now = Date.now();
-  const plan: [OrderStatus, number][] = [['ready', 9], ['preparing', 6], ['accepted', 3], ['placed', 1]];
+  // walk-up orders only: the New column stays for real online orders
+  const plan: [OrderStatus, number][] = [['ready', 9], ['preparing', 6], ['preparing', 3]];
   for (const [status, minsAgo] of plan) {
     const o = makeOrder(stallId, 'guest', NAMES[Math.floor(Math.random() * NAMES.length)], randomLines(stallId),
       Math.random() < 0.4 ? 'online_demo' : 'cod', undefined, now - minsAgo * 60000);
@@ -252,19 +295,33 @@ function tick() {
   const self = me();
   if (self && useSettings.getState().autopilot) {
     for (const o of db.orders) {
-      if (o.userId !== self.id) continue;
+      if (o.userId !== self.id || now - (db.consoles[o.stallId] ?? 0) < LIVE_CONSOLE_MS) continue;
       if (o.status === 'placed' && now - o.createdAt > ACCEPT_AFTER) { setStatus(o, 'accepted'); changed = true; }
       else if (o.status === 'accepted' && now - o.createdAt > PREP_AFTER) { setStatus(o, 'preparing'); changed = true; }
       else if (o.status === 'preparing' && now - o.createdAt > READY_AFTER) { setStatus(o, 'ready'); changed = true; }
     }
   }
+  // walk-up orders are handled by the counter team on their own
+  for (const o of db.orders) {
+    if (o.userId !== 'guest' || now - (db.rev[o.id] ?? 0) < 50000) continue;
+    if (o.status === 'placed' || o.status === 'accepted') { setStatus(o, 'accepted'); setStatus(o, 'preparing'); changed = true; }
+    else if (o.status === 'preparing') { setStatus(o, 'ready'); changed = true; }
+    else if (o.status === 'ready') { setStatus(o, 'collected'); changed = true; }
+  }
   for (const [stallId, due] of boards) {
+    if (now - (db.consoles[stallId] ?? 0) > 4000) {
+      db.consoles = { ...db.consoles, [stallId]: now };
+      changed = true;
+    }
     if (now < due) continue;
     boards.set(stallId, now + 28000 + Math.random() * 22000);
     const live = liveStalls()[stallId];
     if (live.status === 'open' && live.active < live.maxActive) {
-      addOrder(makeOrder(stallId, 'guest', NAMES[Math.floor(Math.random() * NAMES.length)], randomLines(stallId),
-        Math.random() < 0.4 ? 'online_demo' : 'cod'));
+      const o = makeOrder(stallId, 'guest', NAMES[Math.floor(Math.random() * NAMES.length)], randomLines(stallId),
+        Math.random() < 0.4 ? 'online_demo' : 'cod');
+      setStatus(o, 'accepted');
+      setStatus(o, 'preparing');
+      addOrder(o);
       changed = true;
     }
   }
@@ -317,18 +374,23 @@ export const demo: Backend = {
     return user;
   },
 
-  async staffSignIn(credentials) {
+  async staffSignIn({ email, password }) {
     await load();
-    await wait(400);
-    let user: User;
-    if ('demoAdmin' in credentials) {
-      user = { id: 'demo-admin', name: 'Food Cart admin', role: 'admin' };
-    } else if ('demoStallId' in credentials) {
-      const stall = stallById[credentials.demoStallId];
-      user = { id: `staff-${stall.id}`, name: `${stall.name} team`, role: 'staff', stallId: stall.id };
-    } else {
-      throw new ApiError('NOT_ALLOWED', 'Staff passwords work once Supabase is connected. Pick a demo stall.');
+    await wait(450);
+    const key = email.trim().toLowerCase();
+    const lock = misses[key];
+    if (lock && lock.until > Date.now()) {
+      throw new ApiError('NOT_ALLOWED', `Too many wrong tries. Try again in ${Math.ceil((lock.until - Date.now()) / 1000)} s.`);
     }
+    const account = DEMO_TEAM.find((a) => a.email === key && a.password === password);
+    if (!account) {
+      const n = (lock?.n ?? 0) + 1;
+      misses[key] = n >= 5 ? { n: 0, until: Date.now() + 30000 } : { n, until: 0 };
+      // never say which half was wrong
+      throw new ApiError('NOT_ALLOWED', n >= 5 ? 'Too many wrong tries. This login is locked for 30 s.' : `Email or password is wrong. ${5 - n} ${5 - n === 1 ? 'try' : 'tries'} left.`);
+    }
+    delete misses[key];
+    const user = teamUser(account);
     db.users[user.id] = user;
     setSession(user.id);
     commit();
@@ -362,6 +424,10 @@ export const demo: Backend = {
     return subscribe(() => cb(new Set(db.unavailable)));
   },
 
+  subscribeMenu(cb) {
+    return subscribe(() => cb(db.menu));
+  },
+
   subscribeDeals(cb) {
     return subscribe(() =>
       cb(Object.fromEntries(Object.entries(db.deals).map(([itemId, d]) => [itemId, { ...d, itemId, stallId: itemById[itemId].stallId }]))));
@@ -374,13 +440,26 @@ export const demo: Backend = {
     });
   },
 
+  subscribeAllOrders(cb) {
+    return subscribe(() => cb(isHq() ? db.orders.map((o) => ({ ...o })).sort((a, b) => b.createdAt - a.createdAt) : []));
+  },
+
+  async listUsers() {
+    await load();
+    if (!isHq()) throw new ApiError('NOT_ALLOWED');
+    const team = Object.fromEntries(DEMO_TEAM.map((a) => [teamUser(a).id, teamUser(a)]));
+    return Object.values({ ...team, ...db.users }).map((u) => ({ ...u }));
+  },
+
   subscribeStallOrders(stallId, cb) {
     load().then(() => {
+      if (!runs(stallId)) return;
       seedBoard(stallId);
       commit();
     });
     boards.set(stallId, Date.now() + 15000);
-    const off = subscribe(() => cb(db.orders.filter((o) => o.stallId === stallId).map((o) => ({ ...o }))));
+    // a stall's board is visible to that stall's team and HQ only
+    const off = subscribe(() => cb(runs(stallId) ? db.orders.filter((o) => o.stallId === stallId).map((o) => ({ ...o })) : []));
     return () => {
       off();
       boards.delete(stallId);
@@ -434,6 +513,7 @@ export const demo: Backend = {
   },
 
   async updateStall(stallId, patch) {
+    mustRun(stallId);
     db.stalls = { ...db.stalls, [stallId]: { ...db.stalls[stallId] } };
     touch('stalls');
     const st = db.stalls[stallId];
@@ -443,6 +523,7 @@ export const demo: Backend = {
   },
 
   async setItemAvailable(itemId, available) {
+    mustRun(itemById[itemId]?.stallId);
     db.unavailable = available ? db.unavailable.filter((i) => i !== itemId) : [...new Set([...db.unavailable, itemId])];
     touch('unavailable');
     commit();
@@ -451,12 +532,29 @@ export const demo: Backend = {
   async setDeal(itemId, { price, left, minutes }) {
     const item = itemById[itemId];
     if (!item || price <= 0 || price >= item.price || left < 1) throw new ApiError('NOT_ALLOWED', 'A deal must be cheaper than the menu price.');
+    mustRun(item.stallId);
     db.deals = { ...db.deals, [itemId]: { price: Math.round(price), left: Math.round(left), endsAt: Date.now() + minutes * 60000 } };
     touch('deals');
     commit();
   },
 
+  async saveItem({ id, stallId, name, description, category, price, photo }) {
+    mustRun(stallId);
+    if (id && itemById[id] && itemById[id].stallId !== stallId) mustRun(itemById[id].stallId);
+    if (!name.trim() || !(price > 0) || price > 5000) throw new ApiError('NOT_ALLOWED', 'Give the dish a name and a price.');
+    if (id && isBaseItem(id)) {
+      db.menu = { ...db.menu, prices: { ...db.menu.prices, [id]: Math.round(price) } };
+    } else {
+      const item = { id: id ?? `${stallId}-${uid()}`, stallId, name: name.trim(), description: description.trim(), category, price: Math.round(price), photo };
+      db.menu = { ...db.menu, added: [...db.menu.added.filter((a) => a.id !== item.id), item] };
+    }
+    touch('menu');
+    applyMenu(db.menu);
+    commit();
+  },
+
   async clearDeal(itemId) {
+    mustRun(itemById[itemId]?.stallId);
     const { [itemId]: _gone, ...rest } = db.deals;
     db.deals = rest;
     touch('deals');

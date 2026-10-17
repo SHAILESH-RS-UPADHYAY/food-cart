@@ -108,7 +108,7 @@ export default function Pay() {
         </View>
         <Animated.View key={`t-${phase}`} entering={FadeIn.duration(200)} style={{ alignItems: 'center', gap: 8, maxWidth: 360 }}>
           <T v="h1" color={C.ink} center>
-            {phase === 'processing' ? (method === 'upi' ? 'Approve in your UPI app' : 'Talking to your bank') : phase === 'paid' ? `${rupees(total)} paid` : 'Payment fail ho gaya'}
+            {phase === 'processing' ? (method === 'upi' ? 'Approve in your UPI app' : 'Talking to your bank') : phase === 'paid' ? `${rupees(total)} paid` : 'Payment failed'}
           </T>
           <T v="body" color={C.ink3} center>
             {phase === 'processing' ? `Request sent to ${method === 'upi' ? upi.trim() : `card ending ${cardDigits(card).slice(-4)}`}. Demo only, nothing is charged.`

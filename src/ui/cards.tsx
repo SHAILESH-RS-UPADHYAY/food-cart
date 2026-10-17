@@ -21,9 +21,9 @@ import { toast } from './Toast';
 import { C, R, SHADOW } from './theme';
 
 export const FULL_LINES = [
-  (n: number) => `Kitchen full hai. ${n} min ruk jao, phir try karo.`,
-  () => 'Sau orders pe chef. Thoda saans lene do.',
-  (n: number) => `Tawa pe jagah nahi. ${n} min mein khaali hoga.`,
+  (n: number) => `Kitchen's full. Give it ${n} min, then try again.`,
+  () => "Every burner's busy. The chef says hold that thought.",
+  (n: number) => `No room on the grill. A slot opens in ${n} min.`,
 ];
 export const fullLine = (stall: Stall) => FULL_LINES[stall.id.length % FULL_LINES.length](freeSlotMinutes(stall.avgPrepMin));
 
@@ -32,7 +32,7 @@ export function StallCard({ stall, live, width }: { stall: Stall; live?: StallLi
   const state = stallState(live);
   const h = Math.round(width * 0.56);
   return (
-    <Press onPress={() => router.push(`/stall/${stall.id}`)} feedback="open" scale={0.985} accessibilityRole="link" accessibilityLabel={`${stall.name}, ${state}`}
+    <Press onPress={() => router.push(`/stall/${stall.id}`)} feedback="open" scale={0.985} lift={4} accessibilityRole="link" accessibilityLabel={`${stall.name}, ${state}`}
       style={[{ width, borderRadius: R.card, backgroundColor: C.card, overflow: 'hidden' }, SHADOW.card]}>
       <View style={{ height: h }}>
         <Photo photo={stall.photo} width={width} style={{ width, height: h }} alt={stall.name} />
@@ -89,7 +89,7 @@ export function ItemRow({ item, unavailable, blocked, showStall, onConflict }: {
     setDelta(1);
     if (deal && qty >= deal.left) {
       fx.error();
-      toast(`Sirf ${deal.left} bache hain at the last-call price`, 'hourglass-high-bold');
+      toast(`Only ${deal.left} left at the last-call price`, 'hourglass-high-bold');
       return;
     }
     if (!useCart.getState().add(item.id)) {
@@ -147,7 +147,7 @@ export function DealCard({ item, deal, width = 208, blocked, onConflict }: { ite
     setDelta(1);
     if (qty >= deal.left) {
       fx.error();
-      toast(`Sirf ${deal.left} bache hain`, 'hourglass-high-bold');
+      toast(`Only ${deal.left} left`, 'hourglass-high-bold');
       return;
     }
     if (!useCart.getState().add(item.id)) {
@@ -159,8 +159,8 @@ export function DealCard({ item, deal, width = 208, blocked, onConflict }: { ite
     <View style={{ width, borderRadius: R.card, backgroundColor: C.card, overflow: 'hidden' }}>
       <Press onPress={() => router.push(`/stall/${item.stallId}`)} feedback="open" scale={0.985} accessibilityLabel={`${item.name}, last call deal`}>
         <Photo photo={item.photo} width={width} style={{ width, height: h }} alt={item.name} />
-        <View style={{ position: 'absolute', top: 10, left: 10, paddingHorizontal: 10, height: 26, borderRadius: R.pill, backgroundColor: C.accent, justifyContent: 'center' }}>
-          <T v="label" color={C.onAccent} tab>{percentOff(item.price, deal.price)}% off</T>
+        <View style={{ position: 'absolute', top: 10, left: 10, paddingHorizontal: 10, height: 26, borderRadius: R.pill, backgroundColor: C.saffron, justifyContent: 'center' }}>
+          <T v="label" color={C.ink} tab>{percentOff(item.price, deal.price)}% off</T>
         </View>
       </Press>
       <View style={{ padding: 12, gap: 4 }}>

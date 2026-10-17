@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react';
 import { Platform, ScrollView, TextInput, View } from 'react-native';
 import Animated from 'react-native-reanimated';
 
-import { api, useDeals, useStalls, useUnavailable } from '@/api';
+import { api, useDeals, useMenuVersion, useStalls, useUnavailable } from '@/api';
 import { etaMinutes, liveDeal, percentOff, stallState } from '@/api/rules';
 import { CATEGORIES, ITEMS, STALLS, itemById, stallById, type Category } from '@/data/catalog';
 import { firstName, greeting } from '@/lib/format';
@@ -26,6 +26,7 @@ export default function Home() {
   const live = useStalls();
   const unavailable = useUnavailable();
   const deals = useDeals();
+  const menuV = useMenuVersion();
   const { width, desktop, tablet } = useLayout();
   const pad = useTabInsets();
   const [query, setQuery] = useState('');
@@ -57,7 +58,7 @@ export default function Home() {
     if (!filtering) return [];
     return ITEMS.filter((i) => (!cat || i.category === cat)
       && (!q || norm(`${i.name} ${i.description} ${i.category} ${stallById[i.stallId].name}`).includes(q))).slice(0, 30);
-  }, [q, cat]);
+  }, [q, cat, menuV]);
   const stalls = filtering
     ? STALLS.filter((s) => dishes.some((d) => d.stallId === s.id) || (!!q && norm(`${s.name} ${s.tagline}`).includes(q)))
     : STALLS;
@@ -82,7 +83,7 @@ export default function Home() {
                 placeholderTextColor={C.ink3}
                 accessibilityLabel="Search dishes and stalls"
                 returnKeyType="search"
-                style={[{ flex: 1, height: '100%', fontFamily: F.medium, fontSize: 16, color: C.ink }, Platform.OS === 'web' ? ({ outlineStyle: 'none' } as object) : null]}
+                style={[{ flex: 1, height: '100%', fontFamily: F.regular, fontSize: 16, color: C.ink }, Platform.OS === 'web' ? ({ outlineStyle: 'none' } as object) : null]}
               />
               {!!query && (
                 <Press onPress={() => setQuery('')} feedback="tap" accessibilityLabel="Clear search" style={{ width: 28, height: 28, borderRadius: 14, backgroundColor: C.canvas, alignItems: 'center', justifyContent: 'center' }}>
@@ -92,10 +93,10 @@ export default function Home() {
             </View>
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, height: 54, paddingHorizontal: 18, borderRadius: R.pill, backgroundColor: C.accentTint, alignSelf: desktop ? 'auto' : 'flex-start' }}>
               <View style={{ width: 9, height: 9 }}>
-                <Animated.View style={{ position: 'absolute', inset: 0, borderRadius: 5, backgroundColor: '#5BD38B', animationName: { from: { opacity: 0.6, transform: [{ scale: 1 }] }, to: { opacity: 0, transform: [{ scale: 2.6 }] } }, animationDuration: '1600ms', animationIterationCount: 'infinite', animationTimingFunction: CSS_EASE_OUT }} />
-                <View style={{ width: 9, height: 9, borderRadius: 5, backgroundColor: '#5BD38B' }} />
+                <Animated.View style={{ position: 'absolute', inset: 0, borderRadius: 5, backgroundColor: C.live, animationName: { from: { opacity: 0.6, transform: [{ scale: 1 }] }, to: { opacity: 0, transform: [{ scale: 2.6 }] } }, animationDuration: '1600ms', animationIterationCount: 'infinite', animationTimingFunction: CSS_EASE_OUT }} />
+                <View style={{ width: 9, height: 9, borderRadius: 5, backgroundColor: C.live }} />
               </View>
-              <T v="bodyStrong" color={C.accent} tab>{cooking || 'Many'} orders on the tawa right now</T>
+              <T v="bodyStrong" color={C.accent} tab>{cooking || 'Many'} orders cooking right now</T>
             </View>
           </Animated.View>
         </Column>
@@ -114,7 +115,7 @@ export default function Home() {
             <View key={`${q}|${cat}`}>
               <SectionTitle title={dishes.length ? `${dishes.length} dish${dishes.length === 1 ? '' : 'es'}` : 'Nothing matches yet'} />
               {!dishes.length && (
-                <T v="body" color={C.ink2}>Kuch nahi mila. Try "chai", "momos" or a stall name.</T>
+                <T v="body" color={C.ink2}>Nothing found. Try "coffee", "momos" or a stall name.</T>
               )}
               <View style={{ flexDirection: desktop ? 'row' : 'column', flexWrap: 'wrap', columnGap: 28 }}>
                 {dishes.map((d, i) => (
@@ -127,7 +128,7 @@ export default function Home() {
             </View>
           ) : (
             <>
-              <SectionTitle title="Sabse jaldi ready" />
+              <SectionTitle title="Quickest *right now*" />
             </>
           )}
         </Column>
@@ -145,8 +146,8 @@ export default function Home() {
         {!filtering && dealList.length > 0 && (
           <>
             <Column>
-              <SectionTitle title="Last call deals" right={<T v="label" color={C.accent} tab>Up to {maxOff}% off</T>} />
-              <T v="body" color={C.ink2} style={{ marginTop: -6, marginBottom: 14 }}>Aaj ka extra, kam daam mein. Fresh from today's batch, limited plates.</T>
+              <SectionTitle title="Last call *deals*" right={<T v="label" color={C.masala} tab>Up to {maxOff}% off</T>} />
+              <T v="body" color={C.ink2} style={{ marginTop: -6, marginBottom: 14 }}>Today's extras at lower prices. Fresh from today's batch, limited plates.</T>
             </Column>
             <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 14, paddingHorizontal: gutter + Math.max(0, (width - 1180) / 2) }}>
               {dealList.map((d, i) => (
@@ -159,7 +160,7 @@ export default function Home() {
         )}
 
         <Column>
-          <SectionTitle title={filtering ? 'Stalls with matches' : 'Saare stalls'} right={!filtering ? <T v="label" color={C.ink3}>{STALLS.length} on campus</T> : undefined} />
+          <SectionTitle title={filtering ? 'Stalls with matches' : 'All *stalls*'} right={!filtering ? <T v="label" color={C.ink3}>{STALLS.length} on campus</T> : undefined} />
           <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 20 }}>
             {stalls.map((s, i) => (
               <Animated.View key={s.id} entering={enterRise(i, 160)}>

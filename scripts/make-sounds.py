@@ -161,6 +161,13 @@ KIT = {
         (layer((bell(N['A5'], 0.4, 2.0, 1.4), 0, 0.8), (marimba(N['A5'], 0.3), 0, 0.6)), 0.00, 1),
         (layer((bell(N['C#6'], 0.4, 2.0, 1.4), 0, 0.8), (marimba(N['C#6'], 0.3), 0, 0.6)), 0.13, 1),
         (layer((bell(N['E6'], 0.5, 2.0, 1.4), 0, 0.8), (marimba(N['E6'], 0.35), 0, 0.6)), 0.26, 1)), 0.16, 0.5), -4),
+    # staff console, an online order just landed: bubble pop, rising kalimba E-A, glassy C# ding, sparkle
+    'order': lambda: finish(room(layer(
+        (pop(420, 1250, 0.14, 0.045), 0.00, 0.5),
+        (marimba(N['E6'], 0.08, 0.28), 0.05, 0.85),
+        (marimba(N['A6'], 0.08, 0.28), 0.14, 0.85),
+        (layer((bell(N['C#7'], 0.32, 2.0, 1.2), 0, 0.9), (marimba(N['C#7'], 0.12, 0.4), 0, 0.4)), 0.23, 1),
+        (bell(N['E7'], 0.24, 2.0, 0.8), 0.31, 0.3)), 0.16, 0.45), -5),
     # sonic logo, timed to the onboarding logo build (scallops 0/90/180/270 ms, roll 360 ms, ding 820 ms)
     'intro': lambda: finish(room(layer(
         (marimba(N['A5'], 0.16), 0.00, 0.7), (marimba(N['C#6'], 0.16), 0.09, 0.7),

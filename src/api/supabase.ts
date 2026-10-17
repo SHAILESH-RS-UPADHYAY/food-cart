@@ -2,6 +2,8 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { createClient } from '@supabase/supabase-js';
 import { AppState, Platform } from 'react-native';
 
+import { ITEMS, type Item } from '@/data/catalog';
+
 import { LIVE } from './rules';
 import {
   ApiError, type ApiErrorCode, type AuthTarget, type Backend, type Deal, type Order, type StallLive, type User,
@@ -121,7 +123,6 @@ export const live: Backend = {
   },
 
   async staffSignIn(credentials) {
-    if (!('email' in credentials)) throw new ApiError('NOT_ALLOWED', 'Use your staff email and password.');
     const { error } = await sb.auth.signInWithPassword(credentials);
     if (error) throw new ApiError('BAD_CODE', error.message);
     const user = await loadUser();
@@ -176,6 +177,28 @@ export const live: Backend = {
     };
   },
 
+  subscribeMenu(cb) {
+    const base = new Map(ITEMS.map((i) => [i.id, i.price]));
+    const refresh = () =>
+      sb.from('menu_items').select('id, stall_id, name, description, category, price, photo').then(({ data }) => {
+        const prices: Record<string, number> = {};
+        const added: Item[] = [];
+        for (const r of data ?? []) {
+          if (base.has(r.id)) {
+            if (base.get(r.id) !== r.price) prices[r.id] = r.price;
+          } else {
+            added.push({ id: r.id, stallId: r.stall_id, name: r.name, description: r.description ?? '', category: r.category, price: r.price, photo: r.photo ?? 'cover-hr' });
+          }
+        }
+        cb({ prices, added });
+      });
+    refresh();
+    const ch = sb.channel(topic('menu-items')).on('postgres_changes', { event: '*', schema: 'public', table: 'menu_items' }, refresh).subscribe();
+    return () => {
+      sb.removeChannel(ch);
+    };
+  },
+
   subscribeDeals(cb) {
     const refresh = () =>
       sb.from('deals').select('item_id, stall_id, price, left_qty, ends_at').then(({ data }) =>
@@ -200,6 +223,21 @@ export const live: Backend = {
       cancelled = true;
       off();
     };
+  },
+
+  subscribeAllOrders(cb) {
+    const since = new Date(Date.now() - 16 * 3600 * 1000).toISOString();
+    return watchOrders('orders:all', 'id=neq.00000000-0000-0000-0000-000000000000',
+      () => sb.from('orders').select(ORDER_SELECT).or(`status.in.(${LIVE.join(',')}),created_at.gte.${since}`).order('created_at', { ascending: false }).limit(300), cb);
+  },
+
+  async listUsers() {
+    const [{ data: p }, { data: staff }] = await Promise.all([
+      sb.from('profiles').select('id, name, phone, email, role').order('created_at', { ascending: false }).limit(500),
+      sb.from('stall_staff').select('user_id, stall_id'),
+    ]);
+    const stallOf = new Map((staff ?? []).map((s) => [s.user_id, s.stall_id]));
+    return (p ?? []).map((u) => ({ id: u.id, name: u.name, phone: u.phone ?? undefined, email: u.email ?? undefined, role: u.role, stallId: stallOf.get(u.id) }));
   },
 
   subscribeStallOrders(stallId, cb) {
@@ -239,6 +277,13 @@ export const live: Backend = {
 
   async setDeal(itemId, { price, left, minutes }) {
     const { error } = await sb.rpc('set_deal', { p_item: itemId, p_price: price, p_left: left, p_minutes: minutes });
+    fail(error);
+  },
+
+  async saveItem({ id, stallId, name, description, category, price, photo }) {
+    const { error } = await sb.rpc('upsert_menu_item', {
+      p_id: id ?? null, p_stall: stallId, p_name: name, p_description: description, p_category: category, p_price: price, p_photo: photo,
+    });
     fail(error);
   },
 

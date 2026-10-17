@@ -137,7 +137,7 @@ export function CookieConsent({ delay = 1800 }: { delay?: number }) {
       <View style={{ flexDirection: 'row', gap: 14 }}>
         <Cookie bitten={bitten} />
         <View style={{ flex: 1 }}>
-          <T v="h3">Ek cookie le lein?</T>
+          <T v="h2">Care for a *cookie?*</T>
           <T v="small" color={C.ink2} style={{ marginTop: 4, lineHeight: 18 }}>
             Essential cookies keep you logged in and your cart safe. Optional ones help us make lunch faster. No ads, ever.
           </T>

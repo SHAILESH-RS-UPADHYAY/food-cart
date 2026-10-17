@@ -88,19 +88,19 @@ export default function Orders() {
     <ScrollView style={{ flex: 1, backgroundColor: C.canvas }} contentContainerStyle={{ paddingTop: pad.top, paddingBottom: pad.bottom }}>
       <Column>
         <Animated.View entering={enterRise(0)} style={{ marginTop: desktop ? 28 : 10 }}>
-          <T v="display">Aapke orders</T>
+          <T v="display">Your *orders*</T>
         </Animated.View>
         {orders && !orders.length && (
           <Animated.View entering={enterRise(1)} style={{ marginTop: 40, alignItems: 'flex-start', gap: 12 }}>
             <T v="brand" size={40} color={C.ink4}>#000</T>
-            <T v="h2">Abhi tak koi token nahi.</T>
+            <T v="h2">No tokens *yet.*</T>
             <T v="body" color={C.ink2}>Your first order is one tap away. Pickup codes and live status show up here.</T>
             <Button label="Browse stalls" kind="dark" size="md" onPress={() => router.navigate('/home')} style={{ marginTop: 6 }} />
           </Animated.View>
         )}
         {!!live.length && (
           <>
-            <SectionTitle title="Abhi ban raha hai" />
+            <SectionTitle title="Cooking *now*" />
             <View style={{ gap: 14, flexDirection: desktop ? 'row' : 'column', flexWrap: 'wrap' }}>
               {live.map((o, i) => (
                 <Animated.View key={o.id} entering={enterRise(i, 60)} style={{ width: desktop ? 360 : '100%' }}>
@@ -112,7 +112,7 @@ export default function Orders() {
         )}
         {!!past.length && (
           <>
-            <SectionTitle title="Pehle ke orders" />
+            <SectionTitle title="Past *orders*" />
             <View style={[{ backgroundColor: C.card, borderRadius: R.card, paddingHorizontal: 16 }, SHADOW.card]}>
               {past.map((o, i) => (
                 <View key={o.id} style={i ? { borderTopWidth: 1, borderTopColor: C.line } : undefined}>

@@ -16,7 +16,7 @@
     "android": {
       "package": "in.foodcart.app",
       "adaptiveIcon": {
-        "backgroundColor": "#2E4BFF",
+        "backgroundColor": "#111111",
         "foregroundImage": "./assets/brand/adaptive-foreground.png",
         "backgroundImage": "./assets/brand/adaptive-background.png",
         "monochromeImage": "./assets/brand/adaptive-monochrome.png"
@@ -39,7 +39,7 @@
       [
         "expo-splash-screen",
         {
-          "backgroundColor": "#FFFFFF",
+          "backgroundColor": "#F7F7F5",
           "image": "./assets/brand/splash.png",
           "imageWidth": 220
         }

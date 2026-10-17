@@ -14,6 +14,7 @@ import { CSS_EASE_IN_OUT, CSS_EASE_OUT } from '@/ui/motion';
 import { Photo } from '@/ui/Photo';
 import { Press } from '@/ui/Press';
 import { T } from '@/ui/Text';
+import { PaperGrid } from '@/ui/Surface';
 import { C, R } from '@/ui/theme';
 
 const BOUNCE = cubicBezier(0.34, 1.56, 0.64, 1);
@@ -72,7 +73,7 @@ function OrderScene({ scale }: { scale: number }) {
           <View style={{ padding: 12, gap: 4 }}>
             <T v="label" color={C.ink} numberOfLines={1} style={{ fontSize: 13 }}>{c.name}</T>
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-              <View style={{ width: 7, height: 7, borderRadius: 4, backgroundColor: '#5BD38B' }} />
+              <View style={{ width: 7, height: 7, borderRadius: 4, backgroundColor: C.live }} />
               <T v="small" color={C.ink3}>{c.eta}</T>
             </View>
           </View>
@@ -152,7 +153,7 @@ function TrackScene({ scale }: { scale: number }) {
         <T v="small" color={C.ink2} style={{ marginTop: 6 }}>Token</T>
         <T v="brand" size={54} color={C.accent} tab>#047</T>
         <View style={{ flexDirection: 'row', gap: 5, marginTop: 4 }}>
-          {Array.from({ length: 16 }, (_, i) => <View key={i} style={{ width: 8, height: 2, borderRadius: 1, backgroundColor: 'rgba(15,31,25,0.18)' }} />)}
+          {Array.from({ length: 16 }, (_, i) => <View key={i} style={{ width: 8, height: 2, borderRadius: 1, backgroundColor: 'rgba(17,17,17,0.18)' }} />)}
         </View>
         <T v="small" color={C.ink2} style={{ marginTop: 10 }}>White Sauce Penne, Lemon Iced Tea</T>
         {stamped && (
@@ -279,10 +280,10 @@ function PickupScene({ scale }: { scale: number }) {
 // ---------- screen ----------
 
 const SLIDES = [
-  { title: 'Order kar do. Line chhod do.', body: "Every stall at CU in one app. Order from class, pick it up when it's hot." },
-  { title: 'Saare stalls, ek jagah.', body: 'Live menus, prices and wait times for all seven stalls. Tap to add, done.' },
-  { title: 'Kitchen se live update.', body: "Your token moves from the tawa to the counter in real time. We buzz you the second it's ready." },
-  { title: 'Code dikhao, khana uthao.', body: "Skip the line, show your 4-digit code at the counter. That's it." },
+  { title: 'Order ahead. *Skip the line.*', body: "Every stall at CU in one app. Order from class, pick it up when it's hot." },
+  { title: 'Every stall, *one app.*', body: 'Live menus, prices and wait times for all seven stalls. Tap to add, done.' },
+  { title: 'Live from *the kitchen.*', body: "Your token moves from the kitchen to the counter in real time. We buzz you the second it's ready." },
+  { title: 'Show your code, *grab your food.*', body: "Skip the line, show your 4-digit code at the counter. That's it." },
 ];
 
 export default function Onboarding() {
@@ -327,6 +328,7 @@ export default function Onboarding() {
 
   return (
     <View style={{ flex: 1, backgroundColor: C.canvas }}>
+      <PaperGrid />
       <ScrollView
         ref={scroller}
         horizontal

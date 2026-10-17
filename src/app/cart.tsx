@@ -68,7 +68,7 @@ export default function Cart() {
           <View style={{ width: 96, height: 96, borderRadius: 48, backgroundColor: C.accentTint, alignItems: 'center', justifyContent: 'center' }}>
             <Icon name="shopping-bag-bold" size={42} color={C.accent} />
           </View>
-          <T v="h1" center>Cart khaali hai.</T>
+          <T v="h1" center>Your cart is *empty.*</T>
           <T v="body" color={C.ink2} center>Seven stalls are cooking right now. Pick one.</T>
           <Button label="Browse stalls" onPress={() => router.replace('/home')} kind="dark" size="md" style={{ marginTop: 8 }} />
         </Animated.View>
@@ -147,7 +147,7 @@ export default function Cart() {
               placeholder="Kam teekha, no onion, extra napkins"
               placeholderTextColor={C.ink3}
               multiline
-              style={[{ minHeight: 78, borderRadius: R.input, borderWidth: 1.5, borderColor: C.line, backgroundColor: C.card, padding: 14, fontFamily: F.medium, fontSize: 15, color: C.ink, textAlignVertical: 'top' }, Platform.OS === 'web' ? ({ outlineStyle: 'none' } as object) : null]}
+              style={[{ minHeight: 78, borderRadius: R.input, borderWidth: 1.5, borderColor: C.line, backgroundColor: C.card, padding: 14, fontFamily: F.regular, fontSize: 15, color: C.ink, textAlignVertical: 'top' }, Platform.OS === 'web' ? ({ outlineStyle: 'none' } as object) : null]}
             />
           </Animated.View>
         </View>

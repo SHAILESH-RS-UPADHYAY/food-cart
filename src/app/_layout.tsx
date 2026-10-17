@@ -1,9 +1,5 @@
-import { AnekLatin_600SemiBold, AnekLatin_700Bold, AnekLatin_800ExtraBold } from '@expo-google-fonts/anek-latin';
-import { Shrikhand_400Regular } from '@expo-google-fonts/shrikhand';
-import {
-  SchibstedGrotesk_400Regular, SchibstedGrotesk_500Medium, SchibstedGrotesk_700Bold,
-  SchibstedGrotesk_800ExtraBold, SchibstedGrotesk_900Black,
-} from '@expo-google-fonts/schibsted-grotesk';
+import { InstrumentSerif_400Regular_Italic } from '@expo-google-fonts/instrument-serif';
+import { Inter_400Regular, Inter_500Medium, Inter_600SemiBold, Inter_700Bold } from '@expo-google-fonts/inter';
 import { useFonts } from 'expo-font';
 import { Stack, usePathname } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
@@ -43,7 +39,7 @@ function LiveSync() {
         useNotify.getState().drop(id);
         if (st === 'open' || st === 'busy') {
           fx.pill();
-          toast(`${stallById[id].name} mein jagah ho gayi. Order now!`, 'bell-ringing-bold', 'leaf');
+          toast(`${stallById[id].name} has room again. Order now!`, 'bell-ringing-bold', 'leaf');
         }
       }
     }
@@ -62,9 +58,9 @@ function LiveSync() {
       const stall = stallById[o.stallId]?.name ?? 'The stall';
       if (o.status === 'ready' && !watching && useSettings.getState().alerts) {
         fx.ready();
-        toast(`${token(o.tokenNo)} ready hai at ${stall}. Counter pe jao!`, 'bell-ringing-bold', 'leaf');
+        toast(`${token(o.tokenNo)} is ready at ${stall}. Head to the counter!`, 'bell-ringing-bold', 'leaf');
       } else if (o.status === 'accepted' && !watching) {
-        toast(`${stall} ne ${token(o.tokenNo)} accept kar liya`, 'chef-hat-bold');
+        toast(`${stall} accepted ${token(o.tokenNo)}`, 'chef-hat-bold');
       } else if (o.status === 'rejected') {
         fx.error();
         toast(`${stall} couldn't take ${token(o.tokenNo)}`, 'warning-bold', 'chilli');
@@ -76,15 +72,11 @@ function LiveSync() {
 
 export default function RootLayout() {
   const [fontsLoaded] = useFonts({
-    Shrikhand_400Regular,
-    AnekLatin_600SemiBold,
-    AnekLatin_700Bold,
-    AnekLatin_800ExtraBold,
-    SchibstedGrotesk_400Regular,
-    SchibstedGrotesk_500Medium,
-    SchibstedGrotesk_700Bold,
-    SchibstedGrotesk_800ExtraBold,
-    SchibstedGrotesk_900Black,
+    InstrumentSerif_400Regular_Italic,
+    Inter_400Regular,
+    Inter_500Medium,
+    Inter_600SemiBold,
+    Inter_700Bold,
   });
   const ready = useSession((s) => s.ready);
   const reduced = useReducedMotion();

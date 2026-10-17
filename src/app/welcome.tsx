@@ -13,6 +13,7 @@ import { Field } from '@/ui/Field';
 import { Icon } from '@/ui/Icon';
 import { enterRise } from '@/ui/motion';
 import { T } from '@/ui/Text';
+import { PaperGrid } from '@/ui/Surface';
 import { C, R } from '@/ui/theme';
 
 export default function Welcome() {
@@ -35,6 +36,7 @@ export default function Welcome() {
 
   return (
     <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1, backgroundColor: C.canvas }}>
+      <PaperGrid />
       <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={{ flexGrow: 1, paddingTop: insets.top + 40, paddingBottom: insets.bottom + 24, paddingHorizontal: 22, alignItems: 'center' }}>
         <View style={{ width: '100%', maxWidth: 440, flex: 1, justifyContent: 'center', gap: 26 }}>
           <Animated.View entering={enterRise(0)}>
@@ -44,7 +46,7 @@ export default function Welcome() {
                 <T v="label" color={C.ink}>CU student verified</T>
               </View>
             )}
-            <T v="display" color={C.ink}>Token pe naam kya likhein?</T>
+            <T v="display" color={C.ink}>What name goes *on your token?*</T>
             <T v="body" color={C.ink3} style={{ marginTop: 10, fontSize: 16 }}>Your first name goes on every token, so the counter knows it's yours.</T>
           </Animated.View>
           <Animated.View entering={enterRise(1)}>

@@ -32,7 +32,7 @@ export function Field({ label, prefix, error, hint, style, onFocus, onBlur, ...r
           selectionColor={C.accent}
           onFocus={(e) => { setFocus(true); onFocus?.(e); }}
           onBlur={(e) => { setFocus(false); onBlur?.(e); }}
-          style={[{ flex: 1, height: '100%', color: fg, fontFamily: F.bold, fontSize: 18, letterSpacing: 0.2 }, noOutline, style]}
+          style={[{ flex: 1, height: '100%', color: fg, fontFamily: F.medium, fontSize: 16.5, letterSpacing: -0.1 }, noOutline, style]}
         />
       </Animated.View>
       {error ? <T v="small" color={C.chilli}>{error}</T> : hint ? <T v="small" color={C.ink3}>{hint}</T> : null}

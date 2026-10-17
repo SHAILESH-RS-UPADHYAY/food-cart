@@ -95,7 +95,7 @@ export default function Me() {
       useCart.getState().clear();
       useSession.getState().setUser(null);
       setSheet(null);
-      toast('Account deleted. Phir milenge!', 'check-bold');
+      toast('Account deleted. See you around!', 'check-bold');
       router.replace('/login');
     } catch {
       fx.error();
@@ -229,7 +229,7 @@ export default function Me() {
             multiline
             placeholder="Token #047 at HR Cafe: got a cappuccino instead of cold coffee"
             placeholderTextColor={C.ink3}
-            style={[{ minHeight: 110, borderRadius: R.input, backgroundColor: C.card, padding: 14, fontFamily: F.medium, fontSize: 15, color: C.ink, textAlignVertical: 'top' }, Platform.OS === 'web' ? ({ outlineStyle: 'none' } as object) : null]}
+            style={[{ minHeight: 110, borderRadius: R.input, backgroundColor: C.card, padding: 14, fontFamily: F.regular, fontSize: 15, color: C.ink, textAlignVertical: 'top' }, Platform.OS === 'web' ? ({ outlineStyle: 'none' } as object) : null]}
           />
           <Button label="Send" disabled={report.trim().length < 6} onPress={() => { setSheet(null); fx.success(); toast("Thanks. We'll look into it today.", 'check-bold', 'leaf'); }} block feedback="none" />
         </View>

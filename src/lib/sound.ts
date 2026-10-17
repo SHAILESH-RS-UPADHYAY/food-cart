@@ -17,6 +17,8 @@ export function initSound() {
   }
 }
 
+export const soundUnlocked = () => true;
+
 export function playSound(name: SoundName, volume = 1) {
   const pool = pools.get(name);
   if (!pool) return;

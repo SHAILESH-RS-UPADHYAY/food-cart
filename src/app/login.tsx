@@ -16,6 +16,7 @@ import { enterRise } from '@/ui/motion';
 import { Pill } from '@/ui/Pill';
 import { Press } from '@/ui/Press';
 import { T } from '@/ui/Text';
+import { PaperGrid } from '@/ui/Surface';
 import { C, R } from '@/ui/theme';
 
 type Mode = 'phone' | 'student' | 'email';
@@ -63,6 +64,7 @@ export default function Login() {
 
   return (
     <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1, backgroundColor: C.canvas }}>
+      <PaperGrid />
       <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={{ flexGrow: 1, paddingTop: insets.top + 24, paddingBottom: insets.bottom + 24, paddingHorizontal: 22, alignItems: 'center' }}>
         <View style={{ width: '100%', maxWidth: 440, flex: 1 }}>
           <Animated.View entering={enterRise(0)}>
@@ -70,7 +72,7 @@ export default function Login() {
           </Animated.View>
           <View style={{ flex: 1, justifyContent: 'center', paddingVertical: desktop ? 40 : 28, gap: 26 }}>
             <Animated.View entering={enterRise(1)}>
-              <T v="display" color={C.ink}>Bas number daalo.</T>
+              <T v="display" color={C.ink}>Start with your *number.*</T>
               <T v="body" color={C.ink3} style={{ marginTop: 10, fontSize: 16 }}>
                 {mode === 'phone' ? "We'll text a 6-digit code. No passwords to remember." : "We'll email a 6-digit code. No passwords to remember."}
               </T>
@@ -127,7 +129,7 @@ export default function Login() {
 
           <Press onPress={() => router.push('/staff/login')} feedback="tap" style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, height: 48 }}>
             <Icon name="storefront-bold" size={18} color={C.ink3} />
-            <T v="label" color={C.ink3}>Stall staff? Open the console</T>
+            <T v="label" color={C.ink3}>Stall staff or Food Cart team? Sign in here</T>
           </Press>
         </View>
       </ScrollView>

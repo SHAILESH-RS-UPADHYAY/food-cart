@@ -66,5 +66,6 @@ export function useCartSummary(onlyStall?: string) {
   const qty = useCart((s) => s.qty);
   const stallId = useCart((s) => s.stallId);
   const deals = useLive((s) => s.deals);
+  useLive((s) => s.menuVersion);
   return cartSummary(onlyStall && onlyStall !== stallId ? {} : qty, deals);
 }

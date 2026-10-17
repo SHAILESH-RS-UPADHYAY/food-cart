@@ -12,7 +12,7 @@ import { C, R } from './theme';
 
 type Props = { label: string; active?: boolean; onPress: () => void; photo?: PhotoKey; icon?: IconName; count?: number };
 
-/** Selectable chip. Active = ultramarine fill; colour change is a 180 ms transition. */
+/** Selectable chip. Active = accent fill; colour change is a 180 ms transition. */
 export function Pill({ label, active, onPress, photo, icon, count }: Props) {
   const bg = active ? C.accent : C.card;
   const fg = active ? C.onAccent : C.ink;

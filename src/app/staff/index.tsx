@@ -4,18 +4,22 @@ import { ScrollView, View } from 'react-native';
 import Animated, { FadeInDown, LinearTransition } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { api, useDeals, useStallOrders, useStalls, useUnavailable, type Order, type OrderStatus } from '@/api';
+import { api, useDeals, useMenuVersion, useStallOrders, useStalls, useUnavailable, type Order, type OrderStatus } from '@/api';
 import { KITCHEN, liveDeal, stallState } from '@/api/rules';
 import { itemsOf, stallById, type Item } from '@/data/catalog';
 import { fx } from '@/lib/feedback';
 import { clock, rupees, token } from '@/lib/format';
 import { useLayout } from '@/lib/layout';
+import { soundUnlocked } from '@/lib/sound';
 import { useSession } from '@/store/session';
+import { useSettings } from '@/store/settings';
 import { CapacityMeter, Hairline, StatusChip } from '@/ui/bits';
 import { Button } from '@/ui/Button';
 import { Icon } from '@/ui/Icon';
 import { CartMark } from '@/ui/Logo';
 import { DealSheet } from '@/ui/DealSheet';
+import { ItemSheet } from '@/ui/ItemSheet';
+import { NoAccess } from '@/ui/NoAccess';
 import { CSS_EASE_OUT, EASE_OUT } from '@/ui/motion';
 import { Photo } from '@/ui/Photo';
 import { Pill } from '@/ui/Pill';
@@ -27,9 +31,9 @@ import { C, R, SHADOW } from '@/ui/theme';
 
 type Column = 'new' | 'cooking' | 'ready';
 const COLS: { key: Column; label: string; statuses: OrderStatus[]; empty: string }[] = [
-  { key: 'new', label: 'New', statuses: ['placed'], empty: 'Abhi koi naya order nahi.' },
-  { key: 'cooking', label: 'Cooking', statuses: ['accepted', 'preparing'], empty: 'Kitchen khaali hai.' },
-  { key: 'ready', label: 'Ready', statuses: ['ready'], empty: 'Counter pe koi wait nahi kar raha.' },
+  { key: 'new', label: 'New', statuses: ['placed'], empty: 'No new orders yet.' },
+  { key: 'cooking', label: 'Cooking', statuses: ['accepted', 'preparing'], empty: 'Nothing cooking right now.' },
+  { key: 'ready', label: 'Ready', statuses: ['ready'], empty: 'Nobody waiting at the counter.' },
 ];
 const ENTER = FadeInDown.duration(280).easing(EASE_OUT);
 const REFLOW = LinearTransition.duration(220).easing(EASE_OUT);
@@ -110,10 +114,13 @@ export default function Console() {
   const unavailable = useUnavailable();
   const deals = useDeals();
   const [dealItem, setDealItem] = useState<Item | null>(null);
+  const [editItem, setEditItem] = useState<Item | null>(null);
+  const [adding, setAdding] = useState(false);
+  useMenuVersion();
   const insets = useSafeAreaInsets();
   const { desktop, tablet } = useLayout();
   const now = useNow();
-  const [view, setView] = useState<Column | 'menu' | 'deals'>('new');
+  const [view, setView] = useState<Column | 'menu' | 'deals' | 'done'>('new');
   const [busyId, setBusyId] = useState<string | null>(null);
   const [fresh, setFresh] = useState<Set<string>>(new Set());
   const seen = useRef<Set<string> | null>(null);
@@ -126,8 +133,8 @@ export default function Console() {
     if (seen.current && Date.now() - mountedAt.current > 2500) {
       const arrivals = placed.filter((o) => !seen.current!.has(o.id));
       if (arrivals.length) {
-        fx.alert();
-        toast(`Naya order ${token(arrivals[0].tokenNo)} from ${arrivals[0].customerName}`, 'bell-ringing-bold');
+        fx.order();
+        toast(`New order ${token(arrivals[0].tokenNo)} from ${arrivals[0].customerName}`, 'bell-ringing-bold');
         setFresh((f) => new Set([...f, ...arrivals.map((o) => o.id)]));
         setTimeout(() => setFresh((f) => new Set([...f].filter((id) => !arrivals.some((a) => a.id === id)))), 7000);
       }
@@ -145,6 +152,13 @@ export default function Console() {
 
   if (!user) return <Redirect href="/staff/login" />;
   if (!stall) return <Redirect href={user.role === 'student' ? '/home' : '/staff/login'} />;
+  const foreign = user.role === 'staff' && params.stall && params.stall !== user.stallId ? stallById[params.stall] : undefined;
+  if (foreign) {
+    return (
+      <NoAccess title="Not your *counter.*" action={`Open ${stall.name}`} onAction={() => router.replace('/staff')}
+        body={`${foreign.name} is run by its own team. You're signed in for ${stall.name}, so this login only opens ${stall.name}.`} />
+    );
+  }
 
   const byCol = (c: (typeof COLS)[number]) => (orders ?? []).filter((o) => c.statuses.includes(o.status)).sort((a, b) => a.createdAt - b.createdAt);
   const kitchen = (orders ?? []).filter((o) => KITCHEN.includes(o.status)).length;
@@ -205,7 +219,12 @@ export default function Console() {
           <CartMark size={34} />
           <View style={{ flex: 1 }}>
             <T v="h2" numberOfLines={1}>{stall.name}</T>
-            <T v="small" color={C.ink3}>Stall console</T>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
+              <Icon name="lock-simple-bold" size={12} color={C.ink3} />
+              <T v="small" color={C.ink3} numberOfLines={1} style={{ flexShrink: 1 }}>
+                {user.role === 'admin' ? 'HQ view, every stall' : desktop || tablet ? `${user.email ?? 'Staff'} · this stall only` : 'This stall only'}
+              </T>
+            </View>
           </View>
           <StatusChip state={state} pulse />
           {user.role === 'admin' && (
@@ -222,6 +241,7 @@ export default function Console() {
 
       <ScrollView contentContainerStyle={{ paddingBottom: insets.bottom + 40 }}>
         <View style={{ width: '100%', maxWidth: 1280, alignSelf: 'center', paddingHorizontal: desktop ? 32 : 18, paddingTop: 18, gap: 18 }}>
+          <SoundGate />
           <View style={{ flexDirection: desktop || tablet ? 'row' : 'column', gap: 12 }}>
             <View style={[{ flex: 2, padding: 16, borderRadius: R.card, backgroundColor: C.card, gap: 12 }, SHADOW.card]}>
               <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
@@ -263,11 +283,34 @@ export default function Console() {
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8 }}>
             {!desktop && COLS.map((c) => <Pill key={c.key} label={c.label} count={byCol(c).length} active={view === c.key} onPress={() => setView(c.key)} />)}
             {desktop && <Pill label="Live board" icon="squares-four-bold" active={view !== 'menu'} onPress={() => setView('new')} />}
+            <Pill label="Done today" icon="check-circle-fill" count={today.done} active={view === 'done'} onPress={() => setView('done')} />
             <Pill label="Menu" icon="bowl-food-bold" active={view === 'menu'} onPress={() => setView('menu')} />
             <Pill label="Last call" icon="hourglass-high-bold" count={itemsOf(stall.id).filter((it) => liveDeal(deals[it.id])).length} active={view === 'deals'} onPress={() => setView('deals')} />
           </ScrollView>
 
-          {view === 'deals' ? (
+          {view === 'done' ? (
+            <View style={[{ backgroundColor: C.card, borderRadius: R.card, paddingHorizontal: 16 }, SHADOW.card]}>
+              {(orders ?? []).filter((o) => ['collected', 'rejected', 'cancelled'].includes(o.status)).sort((a, b) => b.createdAt - a.createdAt).map((o, i) => (
+                <View key={o.id}>
+                  {i > 0 && <Hairline />}
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 12 }}>
+                    <T v="brand" size={22} color={C.accent} tab style={{ width: 66 }}>{token(o.tokenNo)}</T>
+                    <View style={{ flex: 1 }}>
+                      <T v="bodyStrong" numberOfLines={1}>{o.customerName}</T>
+                      <T v="small" color={C.ink3} numberOfLines={1}>{o.lines.map((l) => `${l.qty}× ${l.name}`).join(', ')}</T>
+                    </View>
+                    <View style={{ alignItems: 'flex-end' }}>
+                      <T v="bodyStrong" tab>{rupees(o.total)}</T>
+                      <T v="small" color={o.status === 'collected' ? C.leaf : C.chilli}>{o.status === 'collected' ? `Handed over ${clock(o.collectedAt ?? o.createdAt)}` : o.status}</T>
+                    </View>
+                  </View>
+                </View>
+              ))}
+              {!(orders ?? []).some((o) => ['collected', 'rejected', 'cancelled'].includes(o.status)) && (
+                <T v="body" color={C.ink3} center style={{ paddingVertical: 24 }}>Nothing handed over yet today.</T>
+              )}
+            </View>
+          ) : view === 'deals' ? (
             <View style={{ gap: 14 }}>
               <View style={[{ backgroundColor: C.card, borderRadius: R.card, padding: 16 }, SHADOW.card]}>
                 <T v="h3">Leftovers? Sell them, don't bin them.</T>
@@ -278,7 +321,7 @@ export default function Console() {
               {itemsOf(stall.id).map((it) => {
                 const d = liveDeal(deals[it.id]);
                 return (
-                  <View key={it.id} style={[{ flexDirection: 'row', alignItems: 'center', gap: 12, padding: 12, borderRadius: R.card, backgroundColor: d ? C.accentTint : C.card }]}>
+                  <View key={it.id} style={[{ flexDirection: 'row', alignItems: 'center', gap: 12, padding: 12, borderRadius: R.card, backgroundColor: d ? C.saffronSoft : C.card }]}>
                     <Photo photo={it.photo} width={52} style={{ width: 52, height: 52, borderRadius: 12 }} />
                     <View style={{ flex: 1 }}>
                       <T v="bodyStrong" numberOfLines={1}>{it.name}</T>
@@ -294,7 +337,10 @@ export default function Console() {
             </View>
           ) : view === 'menu' ? (
             <View style={[{ backgroundColor: C.card, borderRadius: R.card, padding: 16 }, SHADOW.card]}>
-              <T v="body" color={C.ink2} style={{ marginBottom: 6 }}>Switch a dish off the moment it runs out. Students see "Sold out" instantly.</T>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12, marginBottom: 6, flexWrap: 'wrap' }}>
+                <T v="body" color={C.ink2} style={{ flex: 1, minWidth: 200 }}>Add dishes, set prices, and switch a dish off the moment it runs out. Students see changes instantly.</T>
+                <Button label="Add a dish" icon="plus-bold" size="md" onPress={() => { fx.open(); setEditItem(null); setAdding(true); }} feedback="none" />
+              </View>
               {menuSections.map(([cat, list]) => (
                 <View key={cat}>
                   <T v="h3" style={{ marginTop: 16, marginBottom: 4 }}>{cat}</T>
@@ -304,8 +350,13 @@ export default function Console() {
                       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 12 }}>
                         <View style={{ flex: 1 }}>
                           <T v="bodyStrong" color={unavailable.has(it.id) ? C.ink3 : C.ink}>{it.name}</T>
-                          <T v="small" color={unavailable.has(it.id) ? C.chilli : C.ink3} tab>{unavailable.has(it.id) ? 'Sold out' : rupees(it.price)}</T>
+                          <T v="small" color={unavailable.has(it.id) ? C.chilli : C.ink3} tab>{unavailable.has(it.id) ? 'Sold out' : it.description}</T>
                         </View>
+                        <Press onPress={() => { fx.open(); setEditItem(it); setAdding(true); }} feedback="none" accessibilityLabel={`Edit price of ${it.name}`}
+                          style={{ flexDirection: 'row', alignItems: 'center', gap: 6, height: 34, paddingHorizontal: 12, borderRadius: R.pill, backgroundColor: C.canvas, borderWidth: 1, borderColor: C.line }}>
+                          <T v="bodyStrong" tab>{rupees(it.price)}</T>
+                          <Icon name="note-pencil-bold" size={13} color={C.ink3} />
+                        </Press>
                         <Toggle label={`${it.name} available`} value={!unavailable.has(it.id)} onChange={(v) => api.setItemAvailable(it.id, v)} />
                       </View>
                     </View>
@@ -328,6 +379,28 @@ export default function Console() {
         </View>
       </ScrollView>
       <DealSheet item={dealItem} current={dealItem ? liveDeal(deals[dealItem.id]) : undefined} onClose={() => setDealItem(null)} />
+      <ItemSheet stallId={stall.id} item={editItem ?? undefined} open={adding} onClose={() => setAdding(false)} />
     </View>
+  );
+}
+
+/** Browsers mute a freshly loaded page until the first tap: say so, and let one tap fix it. */
+function SoundGate() {
+  const enabled = useSettings((s) => s.sound);
+  const [unlocked, setUnlocked] = useState(soundUnlocked);
+  useEffect(() => {
+    if (unlocked) return;
+    const t = setInterval(() => soundUnlocked() && setUnlocked(true), 700);
+    return () => clearInterval(t);
+  }, [unlocked]);
+  if (enabled && unlocked) return null;
+  return (
+    <Press onPress={() => { useSettings.getState().set({ sound: true }); setTimeout(() => fx.order(), 300); }} feedback="none" hover={false}
+      accessibilityLabel="Turn on the order sound"
+      style={{ flexDirection: 'row', alignItems: 'center', gap: 10, minHeight: 52, paddingHorizontal: 14, borderRadius: R.card, backgroundColor: C.saffronSoft, borderWidth: 1, borderColor: C.saffron }}>
+      <Icon name="speaker-slash-bold" size={18} color={C.masala} />
+      <T v="bodyStrong" color={C.masala} style={{ flex: 1 }}>New-order sound is off. Tap to turn it on.</T>
+      <T v="label" color={C.masala}>Turn on</T>
+    </Press>
   );
 }

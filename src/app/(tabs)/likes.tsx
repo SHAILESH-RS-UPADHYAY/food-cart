@@ -38,7 +38,7 @@ export default function Likes() {
       <ScrollView contentContainerStyle={{ paddingTop: pad.top, paddingBottom: pad.bottom }}>
         <Column>
           <Animated.View entering={enterRise(0)} style={{ marginTop: desktop ? 28 : 10 }}>
-            <T v="display">Your favourites</T>
+            <T v="display">Your *favourites*</T>
           </Animated.View>
           <Animated.View entering={enterRise(1)} style={{ flexDirection: 'row', gap: 8, marginTop: 18, marginBottom: 18 }}>
             <Pill label="Dishes" icon="bowl-food-bold" count={items.length} active={tab === 'items'} onPress={() => setTab('items')} />
@@ -50,7 +50,7 @@ export default function Likes() {
               <View style={{ width: 64, height: 64, borderRadius: 32, backgroundColor: C.chilliSoft, alignItems: 'center', justifyContent: 'center' }}>
                 <Icon name="heart-fill" size={30} color={C.chilli} />
               </View>
-              <T v="h2">Abhi kuch nahi.</T>
+              <T v="h2">Nothing here *yet.*</T>
               <T v="body" color={C.ink2}>Tap the heart on any {tab === 'items' ? 'dish' : 'stall'} and it lands here for one-tap reordering.</T>
               <Button label="Explore stalls" kind="dark" size="md" onPress={() => router.navigate('/home')} />
             </Animated.View>

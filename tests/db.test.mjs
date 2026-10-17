@@ -146,3 +146,14 @@ test('delete account: person removed, stall keeps an anonymised order', async ()
   assert.deepEqual(kept, { user_id: null, customer_name: 'Deleted user' });
   assert.equal((await as(db, STAFF, `select id from orders`)).rows.length, 1);
 });
+
+test('staff add dishes and set prices for their own stall only; orders use the new price', async () => {
+  const db = await setup();
+  await assert.rejects(as(db, STUDENT, `select upsert_menu_item(null, 'hr-cafe', 'Kulfi', '', 'Desserts', 50, 'brownie')`), /NOT_ALLOWED/);
+  await assert.rejects(as(db, STAFF, `select upsert_menu_item(null, 'lapinoz', 'Kulfi', '', 'Desserts', 50, 'brownie')`), /NOT_ALLOWED/);
+  await assert.rejects(as(db, STAFF, `select upsert_menu_item('lp-margherita', 'hr-cafe', 'Steal', '', 'Pizza', 1, 'margherita')`), /NOT_ALLOWED/);
+  const id = (await as(db, STAFF, `select upsert_menu_item(null, 'hr-cafe', 'Kesar Kulfi', 'Saffron, pista', 'Desserts', 55, 'brownie') as id`)).rows[0].id;
+  await as(db, STAFF, `select upsert_menu_item('hr-maggi', 'hr-cafe', 'Masala Maggi', 'The hostel classic', 'Snacks', 65, 'masala-maggi')`);
+  const o = (await order(db, STUDENT, [{ item_id: id, qty: 2 }, { item_id: 'hr-maggi', qty: 1 }])).rows[0];
+  assert.equal(o.total, 2 * 55 + 65);
+});

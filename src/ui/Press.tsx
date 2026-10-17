@@ -5,6 +5,7 @@ import Animated from 'react-native-reanimated';
 import { fx } from '@/lib/feedback';
 
 import { CSS_EASE_OUT } from './motion';
+import { SHADOW } from './theme';
 
 export type Feedback = keyof typeof fx | 'none';
 
@@ -16,6 +17,8 @@ type Props = Omit<PressableProps, 'style' | 'children'> & {
   scale?: number;
   /** subtle lift on hover (web, pointer devices) */
   hover?: boolean;
+  /** spatial hover: raise the surface this many px with a deeper shadow (cards) */
+  lift?: number;
 };
 
 // How this element sits in its parent belongs on the Pressable; how it looks belongs on the inner view.
@@ -40,7 +43,7 @@ function split(style: StyleProp<ViewStyle>) {
  * Every tappable thing: 3% scale-down on press-in (CSS transition, no worklet), sound on commit.
  * The Animated.View carries the visual style so the label and icons scale with it.
  */
-export function Press({ style, children, feedback = 'tap', scale = 0.97, hover = true, onPress, onPressIn, onPressOut, disabled, ...rest }: Props) {
+export function Press({ style, children, feedback = 'tap', scale = 0.97, hover = true, lift = 1, onPress, onPressIn, onPressOut, disabled, ...rest }: Props) {
   const [down, setDown] = useState(false);
   const [over, setOver] = useState(false);
   const { outer, inner } = split(style);
@@ -70,11 +73,12 @@ export function Press({ style, children, feedback = 'tap', scale = 0.97, hover =
         style={[
           inner,
           {
-            transform: [{ translateY: over && !down ? -1 : 0 }, { scale: down ? scale : 1 }],
-            transitionProperty: 'transform',
+            transform: [{ translateY: over && !down ? -lift : 0 }, { scale: down ? scale : 1 }],
+            transitionProperty: lift > 1 ? ['transform', 'boxShadow' as never] : 'transform',
             transitionDuration: down ? 100 : 160,
             transitionTimingFunction: CSS_EASE_OUT,
           },
+          lift > 1 && over && !down && SHADOW.lift,
           disabled && { opacity: 0.45 },
         ]}
       >

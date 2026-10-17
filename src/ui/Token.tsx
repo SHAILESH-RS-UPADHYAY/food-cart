@@ -17,7 +17,7 @@ function Perforation({ bg }: { bg: string }) {
       <View style={{ position: 'absolute', left: -NOTCH / 2, width: NOTCH, height: NOTCH, borderRadius: NOTCH / 2, backgroundColor: bg }} />
       <View style={{ position: 'absolute', right: -NOTCH / 2, width: NOTCH, height: NOTCH, borderRadius: NOTCH / 2, backgroundColor: bg }} />
       <View style={{ marginHorizontal: NOTCH, flexDirection: 'row', justifyContent: 'space-between' }}>
-        {Array.from({ length: 18 }, (_, i) => <View key={i} style={{ width: 6, height: 2, borderRadius: 1, backgroundColor: 'rgba(15,31,25,0.18)' }} />)}
+        {Array.from({ length: 18 }, (_, i) => <View key={i} style={{ width: 6, height: 2, borderRadius: 1, backgroundColor: 'rgba(17,17,17,0.18)' }} />)}
       </View>
     </View>
   );

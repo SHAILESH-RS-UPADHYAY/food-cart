@@ -35,7 +35,7 @@ export const stateColor = (s: StallState) => STATE[s].fg;
 export function StatusChip({ state, pulse, onDark }: { state: StallState; pulse?: boolean; onDark?: boolean }) {
   const s = STATE[state];
   return (
-    <View style={{ alignSelf: 'flex-start', flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 10, height: 26, borderRadius: R.pill, backgroundColor: onDark ? 'rgba(21,22,28,0.62)' : s.bg }}>
+    <View style={{ alignSelf: 'flex-start', flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 10, height: 26, borderRadius: R.pill, backgroundColor: onDark ? 'rgba(17,17,17,0.62)' : s.bg }}>
       <View style={{ width: 8, height: 8 }}>
         {pulse && (
           <Animated.View
@@ -46,7 +46,7 @@ export function StatusChip({ state, pulse, onDark }: { state: StallState; pulse?
             }}
           />
         )}
-        <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: onDark && state === 'open' ? '#5BD38B' : s.fg }} />
+        <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: onDark && state === 'open' ? C.live : s.fg }} />
       </View>
       <T v="label" color={onDark ? C.chalk : s.fg}>{s.label}</T>
     </View>

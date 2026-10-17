@@ -4,7 +4,7 @@ import Animated, { Easing, ReduceMotion, useAnimatedStyle, useReducedMotion, use
 
 import { C } from './theme';
 
-const COLORS = [C.chalk, C.chalk, C.accentSoft, '#FFB020', '#FF6B57', C.ink];
+const COLORS = [C.chalk, C.chalk, C.saffron, C.live, C.cookie, C.accentSoft];
 const COUNT = 44;
 const DURATION = 2200;
 
