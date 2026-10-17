@@ -243,7 +243,7 @@ export default function Console() {
         <View style={{ width: '100%', maxWidth: 1280, alignSelf: 'center', paddingHorizontal: desktop ? 32 : 18, paddingTop: 18, gap: 18 }}>
           <SoundGate />
           <View style={{ flexDirection: desktop || tablet ? 'row' : 'column', gap: 12 }}>
-            <View style={[{ flex: 2, padding: 16, borderRadius: R.card, backgroundColor: C.card, gap: 12 }, SHADOW.card]}>
+            <View style={[{ flex: desktop || tablet ? 2 : undefined, padding: 16, borderRadius: R.card, backgroundColor: C.card, gap: 12 }, SHADOW.card]}>
               <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
                 <View>
                   <T v="small" color={C.ink3}>In the kitchen</T>
@@ -265,7 +265,7 @@ export default function Console() {
               <CapacityMeter active={live?.active ?? kitchen} max={live?.maxActive ?? stall.maxActive} state={state} />
               <T v="small" color={C.ink3}>Includes walk-up orders the kitchen is already handling. At the cap, students see "Kitchen full" and can't order.</T>
             </View>
-            <View style={{ flex: 1, gap: 12 }}>
+            <View style={{ flex: desktop || tablet ? 1 : undefined, gap: 12 }}>
               <View style={[{ flex: 1, padding: 16, borderRadius: R.card, backgroundColor: C.card, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 10 }, SHADOW.card]}>
                 <View style={{ flex: 1 }}>
                   <T v="bodyStrong">{open ? 'Taking orders' : 'Paused'}</T>
