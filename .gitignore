@@ -47,3 +47,6 @@ example
 .claude/skills/
 .env
 .playwright-mcp/
+
+# local session handoff, not for GitHub
+TRACKER.md
